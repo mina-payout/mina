@@ -468,3 +468,5 @@ let commitment (t : t) : Transaction_commitment.t =
       (Party_or_stack.With_hashes.other_parties_hash t.other_parties)
     ~protocol_state_predicate_hash:
       (Snapp_predicate.Protocol_state.digest t.protocol_state)
+
+module For_tests = struct end

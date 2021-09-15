@@ -165,6 +165,55 @@ module Update = struct
     end
   end]
 
+  let gen : t Quickcheck.Generator.t =
+    let open Quickcheck.Let_syntax in
+    let%bind app_state =
+      let%bind fields =
+        Quickcheck.Generator.list_with_length 8
+          (* TODO: what gives a good distribution for fields? *)
+          (let%bind n = Int.gen_uniform_incl Int.min_value Int.max_value in
+           let field_gen = Quickcheck.Generator.return (F.of_int n) in
+           Set_or_keep.gen field_gen)
+      in
+      (* won't raise because length is correct *)
+      Quickcheck.Generator.return (Snapp_state.V.of_list_exn fields)
+    in
+    let%bind delegate = Set_or_keep.gen Public_key.Compressed.gen in
+    let%bind verification_key =
+      Set_or_keep.gen
+        (Quickcheck.Generator.return
+           (let data = Pickles.Side_loaded.Verification_key.dummy in
+            let hash = Snapp_account.digest_vk data in
+            { With_hash.data; hash }))
+    in
+    let%bind permissions = Set_or_keep.gen Permissions.gen in
+    let%bind snapp_uri =
+      let uri_gen =
+        Quickcheck.Generator.of_list
+          [ "https://www.example.com"
+          ; "https://www.minaprotocol.org"
+          ; "https://www.gurgle.com"
+          ; "https://faceplant.com"
+          ]
+      in
+      Set_or_keep.gen uri_gen
+    in
+    let%map token_symbol =
+      let token_gen =
+        Quickcheck.Generator.of_list
+          [ "MINA"; "TOKEN1"; "TOKEN2"; "TOKEN3"; "TOKEN4"; "TOKEN5" ]
+      in
+      Set_or_keep.gen token_gen
+    in
+    Poly.
+      { app_state
+      ; delegate
+      ; verification_key
+      ; permissions
+      ; snapp_uri
+      ; token_symbol
+      }
+
   module Checked = struct
     open Pickles.Impls.Step
 
@@ -327,6 +376,32 @@ module Body = struct
       let to_latest = Fn.id
     end
   end]
+
+  let gen : t Quickcheck.Generator.t =
+    let open Quickcheck.Let_syntax in
+    let%bind pk = Public_key.Compressed.gen in
+    let%bind update = Update.gen in
+    let%bind token_id = Token_id.gen in
+    let%bind delta =
+      let%bind magnitude = Amount.gen in
+      let%map sgn = Quickcheck.Generator.of_list [ Sgn.Pos; Neg ] in
+      Signed_poly.{ magnitude; sgn }
+    in
+    (* TODO *)
+    let events = [] in
+    (* TODO *)
+    let rollup_events = [] in
+    let call_data = Pickles.Backend.Tick.Field.zero in
+    let%map depth = Int.gen_uniform_incl 0 20 in
+    { Poly.pk
+    ; update
+    ; token_id
+    ; delta
+    ; events
+    ; rollup_events
+    ; call_data
+    ; depth
+    }
 
   module Checked = struct
     type t =
@@ -585,6 +660,12 @@ module Predicated = struct
     end
 
     let dummy : t = { body = Body.dummy; predicate = Account_nonce.zero }
+
+    let gen : t Quickcheck.Generator.t =
+      let open Quickcheck.Let_syntax in
+      let%bind body = Body.gen in
+      let%map predicate = Account_nonce.gen in
+      Poly.{ body; predicate }
   end
 
   module Empty = struct
