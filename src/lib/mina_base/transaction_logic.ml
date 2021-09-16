@@ -2591,8 +2591,12 @@ module For_tests = struct
     }
 
   (* Quickcheck generator for Parties.t, derived from Test_spec generator *)
-  let gen_parties =
+  let gen_parties_from_test_spec =
     let open Quickcheck.Let_syntax in
-    let%map { specs; _ } = Test_spec.mk_gen ~num_transactions:1 () in
-    party_send (List.hd_exn specs)
+    match%map Test_spec.mk_gen ~num_transactions:1 () with
+    | { specs = [ spec ]; _ } ->
+        party_send spec
+    | { specs; _ } ->
+        failwithf "gen_parties_from_test_spec: expected one spec, got %d"
+          (List.length specs) ()
 end

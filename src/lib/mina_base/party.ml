@@ -72,6 +72,26 @@ module Update = struct
 
     type value = t
 
+    let gen =
+      let open Quickcheck.Let_syntax in
+      let%bind initial_minimum_balance = Balance.gen in
+      let%bind cliff_time = Global_slot.gen in
+      let%bind cliff_amount =
+        Amount.gen_incl Amount.zero (Balance.to_amount initial_minimum_balance)
+      in
+      let%bind vesting_period =
+        Global_slot.gen_incl Global_slot.(succ zero) (Global_slot.of_int 10)
+      in
+      let%map vesting_increment =
+        Amount.gen_incl Amount.one (Amount.of_int 100)
+      in
+      { initial_minimum_balance
+      ; cliff_time
+      ; cliff_amount
+      ; vesting_period
+      ; vesting_increment
+      }
+
     let to_input (t : t) =
       List.reduce_exn ~f:Random_oracle_input.append
         [ Balance.to_input t.initial_minimum_balance
@@ -191,20 +211,21 @@ module Update = struct
       let uri_gen =
         Quickcheck.Generator.of_list
           [ "https://www.example.com"
-          ; "https://www.minaprotocol.org"
+          ; "https://www.minaprotocol.com"
           ; "https://www.gurgle.com"
           ; "https://faceplant.com"
           ]
       in
       Set_or_keep.gen uri_gen
     in
-    let%map token_symbol =
+    let%bind token_symbol =
       let token_gen =
         Quickcheck.Generator.of_list
           [ "MINA"; "TOKEN1"; "TOKEN2"; "TOKEN3"; "TOKEN4"; "TOKEN5" ]
       in
       Set_or_keep.gen token_gen
     in
+    let%map timing = Set_or_keep.gen Timing_info.gen in
     Poly.
       { app_state
       ; delegate
@@ -212,6 +233,7 @@ module Update = struct
       ; permissions
       ; snapp_uri
       ; token_symbol
+      ; timing
       }
 
   module Checked = struct
