@@ -13,11 +13,12 @@ import (
 	// importing this automatically registers the pprof api to our metrics server
 	_ "net/http/pprof"
 
+	ipc "libp2p_ipc"
+
 	capnp "capnproto.org/go/capnp/v3"
 	logging "github.com/ipfs/go-log/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	ipc "libp2p_ipc"
 )
 
 const validationTimeout = 5 * time.Minute
