@@ -408,11 +408,25 @@ module Body = struct
       let%map sgn = Quickcheck.Generator.of_list [ Sgn.Pos; Neg ] in
       Signed_poly.{ magnitude; sgn }
     in
-    (* TODO *)
-    let events = [] in
-    (* TODO *)
-    let rollup_events = [] in
-    let call_data = Pickles.Backend.Tick.Field.zero in
+    let field_array_list_gen ~max_array_len ~max_list_len =
+      let array_gen =
+        let%bind array_len = Int.gen_uniform_incl 0 max_array_len in
+        let%map fields =
+          Quickcheck.Generator.list_with_length array_len
+            Snark_params.Tick.Field.gen
+        in
+        Array.of_list fields
+      in
+      let%bind list_len = Int.gen_uniform_incl 0 max_list_len in
+      Quickcheck.Generator.list_with_length list_len array_gen
+    in
+    (* TODO: are these lengths reasonable? *)
+    let%bind events = field_array_list_gen ~max_array_len:8 ~max_list_len:12 in
+    let%bind rollup_events =
+      field_array_list_gen ~max_array_len:4 ~max_list_len:6
+    in
+    let%bind call_data = Snark_params.Tick.Field.gen in
+    (* TODO: are these numbers reasonable? *)
     let%map depth = Int.gen_uniform_incl 0 20 in
     { Poly.pk
     ; update
