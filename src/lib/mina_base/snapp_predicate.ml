@@ -731,7 +731,11 @@ module Protocol_state = struct
 
     let gen : t Quickcheck.Generator.t =
       let open Quickcheck.Let_syntax in
-      let%bind ledger = return () in
+      let%bind ledger =
+        let%bind hash = Hash.gen Frozen_ledger_hash0.gen in
+        let%map total_currency = Numeric.gen Amount.gen Amount.compare in
+        { Epoch_ledger.Poly.hash; total_currency }
+      in
       let%bind seed = Hash.gen Epoch_seed.gen in
       let%bind start_checkpoint = Hash.gen State_hash.gen in
       let%bind lock_checkpoint = Hash.gen State_hash.gen in
@@ -864,37 +868,43 @@ module Protocol_state = struct
     in
     let%bind timestamp = Numeric.gen Block_time.gen Block_time.compare in
     let%bind blockchain_length = Numeric.gen Length.gen Length.compare in
-    (* TODO: are there bounds here? *)
-    let%bind min_window_density = Numeric.gen Length.gen Length.compare in
+    let max_min_window_density =
+      Genesis_constants.for_unit_tests.protocol.slots_per_sub_window
+      * Genesis_constants.Constraint_constants.compiled.sub_windows_per_window
+      - 1
+      |> Length.of_int
+    in
+    let%bind min_window_density =
+      Numeric.gen
+        (Length.gen_incl Length.zero max_min_window_density)
+        Length.compare
+    in
     (* TODO: fix when type becomes something other than unit *)
-    let%bind vrf_output = return () in
+    let last_vrf_output = () in
     let%bind total_currency =
       Numeric.gen Currency.Amount.gen Currency.Amount.compare
     in
+    (* TODO: remove after merging #9503 *)
     let%bind curr_global_slot =
       Numeric.gen Global_slot.gen Global_slot.compare
     in
-    (* TODO: is there constraint on slot since genesis vs current slot??
-       what if current slot is ignore
-    *)
     let%bind global_slot_since_genesis =
       Numeric.gen Global_slot.gen Global_slot.compare
     in
     let%bind staking_epoch_data = Epoch_data.gen in
-    let%bind next_epoch_data = Epoch_data.gen in
-    Poly.
-      { snarked_ledger_hash
-      ; snarked_next_available_token
-      ; timestamp
-      ; blockchain_length
-      ; min_window_density
-      ; last_vrf_output
-      ; total_currency
-      ; curr_global_slot
-      ; global_slot_since_genesis
-      ; staking_epoch_data
-      ; next_epoch_data
-      }
+    let%map next_epoch_data = Epoch_data.gen in
+    { Poly.snarked_ledger_hash
+    ; snarked_next_available_token
+    ; timestamp
+    ; blockchain_length
+    ; min_window_density
+    ; last_vrf_output
+    ; total_currency
+    ; curr_global_slot
+    ; global_slot_since_genesis
+    ; staking_epoch_data
+    ; next_epoch_data
+    }
 
   let to_input
       ({ snarked_ledger_hash
