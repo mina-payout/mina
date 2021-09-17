@@ -33,6 +33,13 @@ module Closed_interval = struct
     end
   end]
 
+  let gen gen_a compare_a =
+    let open Quickcheck.Let_syntax in
+    let%bind a1 = gen_a in
+    let%map a2 = gen_a in
+    if compare_a a1 a2 <= 0 then { lower = a1; upper = a2 }
+    else { lower = a2; upper = a1 }
+
   let to_input { lower; upper } ~f =
     Random_oracle_input.append (f lower) (f upper)
 
@@ -159,6 +166,8 @@ module Numeric = struct
       [@@deriving sexp, equal, yojson, hash, compare]
     end
   end]
+
+  let gen gen_a compare_a = Or_ignore.gen (Closed_interval.gen gen_a compare_a)
 
   let to_input { zero; max_value; to_input; _ } (t : 'a t) =
     Closed_interval.to_input ~f:to_input
@@ -449,6 +458,38 @@ module Account = struct
     end
   end]
 
+  let gen : t Quickcheck.Generator.t =
+    let open Quickcheck.Let_syntax in
+    let%bind balance = Numeric.gen Balance.gen Balance.compare in
+    let%bind nonce = Numeric.gen Account_nonce.gen Account_nonce.compare in
+    let%bind receipt_chain_hash = Or_ignore.gen Receipt.Chain_hash.gen in
+    let%bind public_key = Eq_data.gen Public_key.Compressed.gen in
+    let%bind delegate = Eq_data.gen Public_key.Compressed.gen in
+    let%bind state =
+      let%bind fields =
+        let field_gen = Snark_params.Tick.Field.gen in
+        Quickcheck.Generator.list_with_length 8 (Or_ignore.gen field_gen)
+      in
+      (* won't raise because length is correct *)
+      Quickcheck.Generator.return (Snapp_state.V.of_list_exn fields)
+    in
+    let%bind rollup_state =
+      let%bind n = Int.gen_uniform_incl Int.min_value Int.max_value in
+      let field_gen = Quickcheck.Generator.return (F.of_int n) in
+      Or_ignore.gen field_gen
+    in
+    let%map proved_state = Or_ignore.gen Quickcheck.Generator.bool in
+    Poly.
+      { balance
+      ; nonce
+      ; receipt_chain_hash
+      ; public_key
+      ; delegate
+      ; state
+      ; rollup_state
+      ; proved_state
+      }
+
   let accept : t =
     { balance = Ignore
     ; nonce = Ignore
@@ -688,6 +729,23 @@ module Protocol_state = struct
       end
     end]
 
+    let gen : t Quickcheck.Generator.t =
+      let open Quickcheck.Let_syntax in
+      let%bind ledger = return () in
+      let%bind seed = Hash.gen Epoch_seed.gen in
+      let%bind start_checkpoint = Hash.gen State_hash.gen in
+      let%bind lock_checkpoint = Hash.gen State_hash.gen in
+      let min_epoch_length = 24 in
+      let max_epoch_length = 7140 in
+      let%map epoch_length =
+        Numeric.gen
+          (Length.gen_incl
+             (Length.of_int min_epoch_length)
+             (Length.of_int max_epoch_length))
+          Length.compare
+      in
+      { Poly.ledger; seed; start_checkpoint; lock_checkpoint; epoch_length }
+
     let to_input
         ({ ledger = { hash; total_currency }
          ; seed
@@ -797,6 +855,46 @@ module Protocol_state = struct
       let to_latest = Fn.id
     end
   end]
+
+  let gen : t Quickcheck.Generator.t =
+    let open Quickcheck.Let_syntax in
+    let%bind snarked_ledger_hash = Hash.gen Frozen_ledger_hash.gen in
+    let%bind snarked_next_available_token =
+      Numeric.gen Token_id.gen Token_id.compare
+    in
+    let%bind timestamp = Numeric.gen Block_time.gen Block_time.compare in
+    let%bind blockchain_length = Numeric.gen Length.gen Length.compare in
+    (* TODO: are there bounds here? *)
+    let%bind min_window_density = Numeric.gen Length.gen Length.compare in
+    (* TODO: fix when type becomes something other than unit *)
+    let%bind vrf_output = return () in
+    let%bind total_currency =
+      Numeric.gen Currency.Amount.gen Currency.Amount.compare
+    in
+    let%bind curr_global_slot =
+      Numeric.gen Global_slot.gen Global_slot.compare
+    in
+    (* TODO: is there constraint on slot since genesis vs current slot??
+       what if current slot is ignore
+    *)
+    let%bind global_slot_since_genesis =
+      Numeric.gen Global_slot.gen Global_slot.compare
+    in
+    let%bind staking_epoch_data = Epoch_data.gen in
+    let%bind next_epoch_data = Epoch_data.gen in
+    Poly.
+      { snarked_ledger_hash
+      ; snarked_next_available_token
+      ; timestamp
+      ; blockchain_length
+      ; min_window_density
+      ; last_vrf_output
+      ; total_currency
+      ; curr_global_slot
+      ; global_slot_since_genesis
+      ; staking_epoch_data
+      ; next_epoch_data
+      }
 
   let to_input
       ({ snarked_ledger_hash

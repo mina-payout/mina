@@ -189,11 +189,8 @@ module Update = struct
     let open Quickcheck.Let_syntax in
     let%bind app_state =
       let%bind fields =
-        Quickcheck.Generator.list_with_length 8
-          (* TODO: what gives a good distribution for fields? *)
-          (let%bind n = Int.gen_uniform_incl Int.min_value Int.max_value in
-           let field_gen = Quickcheck.Generator.return (F.of_int n) in
-           Set_or_keep.gen field_gen)
+        let field_gen = Snark_params.Tick.Field.gen in
+        Quickcheck.Generator.list_with_length 8 (Set_or_keep.gen field_gen)
       in
       (* won't raise because length is correct *)
       Quickcheck.Generator.return (Snapp_state.V.of_list_exn fields)
@@ -399,9 +396,11 @@ module Body = struct
     end
   end]
 
-  let gen : t Quickcheck.Generator.t =
+  let gen ?pk () : t Quickcheck.Generator.t =
     let open Quickcheck.Let_syntax in
-    let%bind pk = Public_key.Compressed.gen in
+    let%bind pk =
+      match pk with Some pk -> return pk | None -> Public_key.Compressed.gen
+    in
     let%bind update = Update.gen in
     let%bind token_id = Token_id.gen in
     let%bind delta =
@@ -535,6 +534,21 @@ module Predicate = struct
     end
   end]
 
+  let gen =
+    let open Quickcheck.Let_syntax in
+    (* choose a constructor *)
+    match%bind Int.gen_uniform_incl 0 2 with
+    | 0 ->
+        let%map account = Snapp_predicate.Account.gen in
+        Full account
+    | 1 ->
+        let%map nonce = Account.Nonce.gen in
+        Nonce nonce
+    | 2 ->
+        return Accept
+    | _ ->
+        failwith "Party.Predicate.gen: unexpected index"
+
   let accept = lazy Random_oracle.(digest (salt "MinaPartyAccept"))
 
   let digest (t : t) =
@@ -608,6 +622,12 @@ module Predicated = struct
       let to_latest = Fn.id
     end
   end]
+
+  let gen =
+    let open Quickcheck.Let_syntax in
+    let%bind body = Body.gen () in
+    let%map predicate = Predicate.gen in
+    Poly.{ body; predicate }
 
   let to_input ({ body; predicate } : t) =
     List.reduce_exn ~f:Random_oracle_input.append
@@ -683,9 +703,10 @@ module Predicated = struct
 
     let dummy : t = { body = Body.dummy; predicate = Account_nonce.zero }
 
-    let gen : t Quickcheck.Generator.t =
+    (* takes an optional public key, in case we need to sign this data *)
+    let gen ?pk () : t Quickcheck.Generator.t =
       let open Quickcheck.Let_syntax in
-      let%bind body = Body.gen in
+      let%bind body = Body.gen ?pk () in
       let%map predicate = Account_nonce.gen in
       Poly.{ body; predicate }
   end
@@ -746,6 +767,14 @@ module Signed = struct
     end
   end]
 
+  (* takes an optional public key, if we want to sign this data *)
+  let gen ?pk () =
+    let open Quickcheck.Let_syntax in
+    let%map data = Predicated.Signed.gen ?pk () in
+    (* real signature to be added when this data inserted into a Parties.t *)
+    let authorization = Signature.dummy in
+    { data; authorization }
+
   let account_id (t : t) : Account_id.t =
     Account_id.create t.data.body.pk t.data.body.token_id
 end
@@ -773,6 +802,12 @@ module Stable = struct
     let to_latest = Fn.id
   end
 end]
+
+let gen =
+  let open Quickcheck.Let_syntax in
+  let%bind data = Predicated.gen in
+  let%map authorization = Control.gen in
+  { data; authorization }
 
 let account_id (t : t) : Account_id.t =
   Account_id.create t.data.body.pk t.data.body.token_id

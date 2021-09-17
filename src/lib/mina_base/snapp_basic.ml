@@ -175,6 +175,15 @@ module Or_ignore = struct
     end
   end]
 
+  let gen gen_a =
+    let open Quickcheck.Let_syntax in
+    (* choose constructor *)
+    let%bind b = Quickcheck.Generator.bool in
+    if b then
+      let%map a = gen_a in
+      Check a
+    else return Ignore
+
   let to_option = function Ignore -> None | Check x -> Some x
 
   let of_option = function None -> Ignore | Some x -> Check x
