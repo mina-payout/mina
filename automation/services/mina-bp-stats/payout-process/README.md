@@ -55,11 +55,11 @@ Use payout_schema.sql to create Payout database
     `LOGGING_LOCATION`          **Required** Path address to save the logging file.
     `COINBASE`                  **Required** Rewards multiplier value.
     `SLOT_WINDOW_VALUE`         **Required** Epoch slot number for performing the calculation.
-	`SENDGRID_API_KEY`	    **Required** Sendgrid API secret key.  
-    `FROM_EMAIL`		    **Required** sender email to be used.
-	`PROVIDER_EMAIL`	    **Required** list of comma separeted email id's to send email with attachment of data summary's to.
+	`SENDGRID_API_KEY`	        **Required** Sendgrid API secret key.  
+    `FROM_EMAIL`		        **Required** sender email to be used.
+	`PROVIDER_EMAIL`	        **Required** list of comma separeted email id's to send email with attachment of data summary's to.
 	`CREDENTIAL_PATH`           **Required** JSON file generated for GCS credentials.
-    `OVERRIDE_EMAIL`              Mail ID for receiving mail's (testing purpose).
+    `OVERRIDE_EMAIL`            **Mail ID for receiving mail's (testing purpose).
     `GCS_BUCKET_NAME`           **Required** Name of GCS bucket. 
     `DELEGATION_ADDRESSS_CSV`   **Required** Delegation address csv file.
     `CALCULATE_EMAIL_TEMPLATE`  **Required** Email template use while sending calculation mail's.
