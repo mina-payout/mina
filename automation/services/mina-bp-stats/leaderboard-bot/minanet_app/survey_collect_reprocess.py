@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
-from time import time
+from time import sleep, time
 import json
 import numpy as np
 from logger_util import logger
@@ -23,146 +23,71 @@ connection = psycopg2.connect(
     password=BaseConfig.POSTGRES_PASSWORD
 )
 
+conn_uptime_files = psycopg2.connect(
+    host=BaseConfig.NEW_POSTGRES_HOST,
+    port=BaseConfig.NEW_POSTGRES_PORT,
+    database=BaseConfig.NEW_POSTGRES_DB,
+    user=BaseConfig.NEW_POSTGRES_USER,
+    password=BaseConfig.NEW_POSTGRES_PASSWORD
+)
+conn_uptime_files.set_session(readonly=True)
+
 start_time = time()
 NODE_DATA_BLOCK_HEIGHT = 'nodeData.blockHeight'
 NODE_DATA_BLOCK_STATE_HASH = 'nodeData.block.stateHash'
 ERROR = 'Error: {0}'
 
-def download_files(start_offset, script_start_time, ten_min_add):
-    storage_client = storage.Client.from_service_account_json(BaseConfig.CREDENTIAL_PATH)
-    bucket = storage_client.get_bucket(BaseConfig.GCS_BUCKET_NAME)
-    blobs = storage_client.list_blobs(bucket, start_offset=start_offset)
-    file_name_list_for_memory = list()
-    file_json_content_list = list()
-    file_names = list()
-    file_created = list()
-    file_updated = list()
-    file_generation = list()
-    file_owner = list()
-    file_crc32c = list()
-    file_md5_hash = list()
-
-    for blob in blobs:
-        if (blob.updated < ten_min_add) and (blob.updated > script_start_time):
-            file_name_list_for_memory.append(blob.name)
-            file_names.append(blob.name)
-            file_updated.append(blob.updated)
-            file_created.append(blob.time_created)
-            file_generation.append(blob.generation)
-            file_owner.append(blob.owner)
-            file_crc32c.append(blob.crc32c)
-            file_md5_hash.append(blob.md5_hash)
-        elif blob.updated > ten_min_add:
-            break
-    file_count = len(file_name_list_for_memory)
-    logger.info('file count for process : {0}'.format(file_count))
-
-    if len(file_name_list_for_memory) > 0:
-        start = time()
-        file_contents = download_batch_into_memory(file_name_list_for_memory, bucket)
-        end = time()
-        logger.info('Time to downaload files: {0}'.format(end - start))
-        for k, v in file_contents.items():
-            file_json_content_list.append(json.loads(v))
-
-        df = pd.json_normalize(file_json_content_list)
-        #df.drop(columns_to_drop, axis=1, inplace=True)
-        df.insert(0, 'file_name', file_names)
-        df['file_created'] = file_created
-        df['file_updated'] = file_updated
-        df['file_generation'] = file_generation
-        df['file_owner'] = file_owner
-        df['file_crc32c'] = file_crc32c
-        df['file_md5_hash'] = file_md5_hash
-        df=df[['file_name', 'receivedAt', 'receivedFrom', 'blockProducerKey',
-       'nodeData.version', 'nodeData.daemonStatus.blockchainLength',
-       'nodeData.daemonStatus.syncStatus', 'nodeData.daemonStatus.chainId',
-       'nodeData.daemonStatus.commitId',
-       'nodeData.daemonStatus.highestBlockLengthReceived',
-       'nodeData.daemonStatus.highestUnvalidatedBlockLengthReceived',
-       'nodeData.daemonStatus.stateHash',
-       'nodeData.daemonStatus.blockProductionKeys',
-       'nodeData.daemonStatus.uptimeSecs', 'nodeData.block.stateHash',
-       'nodeData.retrievedAt', 'nodeData.blockHeight', 'file_created',
-       'file_updated', 'file_generation', 'file_owner', 'file_crc32c',
-       'file_md5_hash']]
-        
-    else:
-        df = pd.DataFrame()
-    return df
-
-def insert_uptime_file_history_batch(conn, df, page_size=100):
-    tuples = [tuple(x) for x in df.to_numpy()]
-    query = """INSERT INTO uptime_file_history(file_name, receivedAt, receivedFrom, blockProducerKey, 
-        nodeData_version, nodeData_daemonStatus_blockchainLength, nodeData_daemonStatus_syncStatus, 
-        nodeData_daemonStatus_chainId, nodeData_daemonStatus_commitId, nodeData_daemonStatus_highestBlockLengthReceived, 
-        nodeData_daemonStatus_highestUnvalidatedBlockLengthReceived, nodeData_daemonStatus_stateHash, 
-        nodeData_daemonStatus_blockProductionKeys, nodeData_daemonStatus_uptimeSecs, nodeData_block_stateHash, 
-        nodeData_retrievedAt, nodeData_blockHeight, file_created_at, file_modified_at, file_generation, file_owner, file_crc32c, file_md5_hash) 
-    VALUES(%s ,%s ,%s ,%s ,%s ,%s ,%s , %s ,%s ,%s ,%s ,%s , %s ,%s ,%s , %s , %s ,%s, %s, %s , %s ,%s, %s ) """
-    
-    try:
-        cursor = conn.cursor()
-        extras.execute_batch(cursor, query, tuples, page_size)
-        
-    except (Exception, psycopg2.DatabaseError) as error:
-        logger.error(ERROR.format(error))
-        cursor.close()
-        return 1
-    finally:
-        cursor.close()
-        return 0
 
 def execute_node_record_batch(conn, df, page_size=100):
+
     tuples = [tuple(x) for x in df.to_numpy()]
     query = """INSERT INTO nodes ( block_producer_key,updated_at) 
             VALUES ( %s,  %s ) ON CONFLICT (block_producer_key) DO NOTHING """
     cursor = conn.cursor()
     try:
+
         extras.execute_batch(cursor, query, tuples, page_size)
+        logger.info('insert into node record table')
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
         cursor.close()
-        return 1
+        raise error
     finally:
         cursor.close()
     return 0
 
 
 def execute_point_record_batch(conn, df, page_size=100):
-    """
-    Using psycopg2.extras.execute_batch() to insert point records dataframe
-    Make sure datafram has exact following columns in sequence
-    file_name,blockchain_epoch, block_producer_key, state_hash,blockchain_height,amount,bot_log_id, created_at
-    """
 
     tuples = [tuple(x) for x in df.to_numpy()]
-    query = """INSERT INTO points ( file_name,file_timestamps,blockchain_epoch, node_id, state_hash,blockchain_height,
+    query = """INSERT INTO points ( file_name,file_timestamps,blockchain_epoch, node_id, blockchain_height,
                 amount,created_at,bot_log_id) 
-            VALUES ( %s, %s,  %s, (SELECT id FROM nodes WHERE block_producer_key= %s), %s, %s, %s,  %s, %s )"""
+            VALUES ( %s, %s,  %s, (SELECT id FROM nodes WHERE block_producer_key= %s), %s, %s, %s,  %s )"""
     try:
         cursor = conn.cursor()
         extras.execute_batch(cursor, query, tuples, page_size)
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
         cursor.close()
-        return 1
+        raise error
     finally:
         cursor.close()
     return 0
 
 
 def create_bot_log(conn, values):
-    query = """INSERT INTO bot_logs(name_of_file,epoch_time,files_processed,file_timestamps,
-    batch_start_epoch,batch_end_epoch) values (%s,%s, %s, %s, %s, %s) RETURNING id """
+    query = """INSERT INTO bot_logs(files_processed,file_timestamps, state_hash,
+    batch_start_epoch,batch_end_epoch) values ( %s, %s, %s, %s, %s) RETURNING id """
     try:
         cursor = conn.cursor()
         cursor.execute(query, values)
         result = cursor.fetchone()
+        logger.info("insert into bot log record table")
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
+        conn.rollback()
         cursor.close()
-        return -1
+        raise error
     finally:
         cursor.close()
     return result[0]
@@ -179,30 +104,9 @@ def connect_to_spreadsheet():
     return table_data
 
 
-def update_email_discord_status(conn, page_size=100):
-    # 4 - block_producer_key,  3 - block_producer_email , # 2 - discord_id
-    spread_df = connect_to_spreadsheet()
-    spread_df = spread_df.iloc[:, [2, 3, 4]]
-    tuples = [tuple(x) for x in spread_df.to_numpy()]
-
-    try:
-        cursor = conn.cursor()
-        sql = """update nodes set application_status = true, discord_id =%s, block_producer_email =%s
-             where block_producer_key= %s """
-        cursor = conn.cursor()
-        extras.execute_batch(cursor, sql, tuples, page_size)
-    except (Exception, psycopg2.DatabaseError) as error:
-        logger.error(ERROR.format(error))
-        cursor.close()
-        return -1
-    finally:
-        cursor.close()
-    return 0
-
-
 def get_provider_accounts():
     # read csv
-    mina_foundation_df = pd.read_csv(BaseConfig.PROVIDER_ACCOUNT_PUB_KEYS_FILE, header=None)
+    mina_foundation_df = pd.read_csv(BaseConfig.PROVIDER_ACCOUNT_PUB_KEYS_FILE)
     mina_foundation_df.columns = ['block_producer_key']
     return mina_foundation_df
 
@@ -248,8 +152,24 @@ def update_scoreboard(conn, score_till_time):
     return 0
 
 
+def get_uptime_data_from_table( batch_start, batch_end):
+    # file_name, file_timestamps, blockchain_epoch, node_id, state_hash,blockchain_height, amount,created_at,bot_log_id
+    query = """select trim(file_name) as file_name,file_created_at file_timestamps , receivedat receivedAt, trim(blockproducerkey) as blockproducerkey , 
+            trim(nodedata_block_statehash) as nodedata_block_statehash , nodedata_blockheight  
+        from uptime_file_history ufh where file_created_at between %s and %s """
+    try:
+        bot_cursor = conn_uptime_files.cursor()
+        bot_cursor.execute(query, (batch_start, batch_end))
+        result = bot_cursor.fetchall()
+        batch_data_df = pd.DataFrame(result, columns=['file_name' , 'file_timestamps', 'receivedAt', 'blockproducerkey' , 'nodedata_block_statehash' , 'nodedata_blockheight'])
+        
+    except (Exception, psycopg2.DatabaseError) as error:
+        logger.error(ERROR.format(error))
+    finally:
+        bot_cursor.close()
+    return batch_data_df
+
 def gcs_main(read_file_interval):
-    update_email_discord_status(connection)
     process_loop_count = 0
     bot_cursor = connection.cursor()
     bot_cursor.execute("SELECT batch_end_epoch FROM bot_logs ORDER BY id DESC limit 1")
@@ -271,6 +191,7 @@ def gcs_main(read_file_interval):
         script_start_time_final = str(script_start_time.date()) + '.' + str(script_start_time.timestamp())
         ten_min_add_final = str(ten_min_add.date()) + '.' + str(ten_min_add.timestamp())
         logger.info('runing for batch: {0} - {1}'.format(script_start_time_final,ten_min_add_final))
+    
 
         # change format for comparison
         script_end_time_var = datetime.strftime(script_end_time, '%Y-%m-%d %H:%M:%S')
@@ -279,28 +200,10 @@ def gcs_main(read_file_interval):
             logger.info('all files are processed till date')
             break
         else:
-            common_str = os.path.commonprefix([script_start_epoch, next_interval_epoch])
-            script_offset = str(script_start_time.date()) + '.' + common_str
-
+            
             # processing code logic
-            master_df = download_files(script_offset, script_start_time, ten_min_add)
-            print(master_df)
-            insert_uptime_file_history_batch(connection, master_df)
-            columns_to_drop = ['receivedFrom', 'nodeData.version', 'nodeData.daemonStatus.blockchainLength',
-                           'nodeData.daemonStatus.syncStatus', 'nodeData.daemonStatus.chainId', 
-                           'nodeData.daemonStatus.commitId', 'nodeData.daemonStatus.highestBlockLengthReceived',
-                           'nodeData.daemonStatus.highestUnvalidatedBlockLengthReceived',
-                           'nodeData.daemonStatus.stateHash', 'nodeData.daemonStatus.blockProductionKeys', 
-                           'nodeData.daemonStatus.uptimeSecs', 'nodeData.retrievedAt','file_created', 
-                           'file_generation', 'file_owner', 'file_crc32c', 'file_md5_hash']
-            master_df.drop(columns_to_drop, axis=1, inplace=True)
-            if master_df.columns.values.tolist()[-1] != NODE_DATA_BLOCK_HEIGHT:
-                master_df = master_df[['file_name', 'file_updated', 'receivedAt', 'blockProducerKey', 'nodeData.block.stateHash',
-                        'nodeData.blockHeight']]
-            
-            master_df = master_df.rename(columns={'file_updated': 'file_timestamps','blockProducerKey':'blockproducerkey',
-                        'nodeData.block.stateHash':'nodedata_block_statehash', 'nodeData.blockHeight':'blockchain_height'})
-            
+            master_df = get_uptime_data_from_table( script_start_time, ten_min_add)
+
             all_file_count = master_df.shape[0]
 
             if all_file_count>0:
@@ -352,19 +255,14 @@ def gcs_main(read_file_interval):
             
             if script_start_time >= script_end_time:
                 do_process = False
-        try:
-            update_scoreboard(connection, script_start_time)
-        except Exception as error:
-            connection.rollback()
-            logger.error(ERROR.format(error))
-        finally:
-            connection.commit()
-            
 
-
+    try:
+        update_scoreboard(connection, script_start_time)
+    except Exception as error:
+        connection.rollback()
+        logger.error(ERROR.format(error))
+    finally:
+        connection.commit()
 if __name__ == '__main__':
     time_interval = BaseConfig.SURVEY_INTERVAL_MINUTES
-    try:
-        gcs_main(time_interval)
-    except Exception as err:
-        logger.error(ERROR.format(err))
+    gcs_main(time_interval)
