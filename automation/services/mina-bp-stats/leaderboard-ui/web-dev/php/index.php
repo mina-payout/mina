@@ -21,6 +21,13 @@
 </head>
 
 <body>
+	<div class="mina-banner">
+        <div class="bannerFlex">
+            <div class="bannerAnnouncement"> Find the list of delegated block producers 
+            <a class="Mina-Refrance-color" href="<?php $myarray = include 'config.php'; $Configurl =  $myarray[1];  echo $Configurl;  ?>" target="_blank">here</a>
+            </div>
+        </div>
+    </div>
     <div class="container">
 
         <!-- Logo And Header Section Start -->

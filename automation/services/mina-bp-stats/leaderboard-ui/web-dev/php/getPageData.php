@@ -3,6 +3,7 @@ require_once ("connection.php");
 $myarray = include 'config.php';
 
 $ShowScoreColumn = $myarray[0];
+$MaintenanceMode = $myarray[2];
 
 if (! (isset($_GET['pageNumber']))) {
     $pageNumber = 1;
@@ -49,8 +50,17 @@ $row = pg_fetch_all($results);
                     </tr>
                 </thead>
                 <tbody class="">
+                <tr style="<?php if($MaintenanceMode != true) {echo 'display: none;';}?>">
+                    <td colspan ="<?php if($ShowScoreColumn != true) {echo '3';} else {echo '4';}?>">
+                        <div class="wrap">
+                            <i class="bi bi-exclamation-triangle-fill" style="font-size: 5rem; color: #b0afaf;"></i>
+                            <h1 class="maintenanceText">Under Maintenance</h1>
+                        </div>
+                    </td>
+                </tr>
                 <?php 
                  $counter = $lowerLimit + 1;
+                 if($MaintenanceMode != true){
                 foreach ($row as $key => $data) { 
                    
                     ?>
@@ -67,6 +77,7 @@ $row = pg_fetch_all($results);
                     <?php
                      $counter++;
     }
+}
     ?>
                 </tbody>
             </table>
@@ -77,7 +88,7 @@ $row = pg_fetch_all($results);
 
 
 
-<nav aria-label="Page navigation example">
+<nav aria-label="Page navigation example" style="<?php if($MaintenanceMode == true) {echo 'display: none;';}?>">
   <ul class="pagination justify-content-center">
     <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
       <a class="page-link" href="javascript:void(0);" tabindex="-1" onclick="showRecords('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>');">First</a>

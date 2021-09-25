@@ -7,7 +7,7 @@
     font-family: Monument Grotesk;
     font-style: normal;
     font-weight: normal;
-    margin-top: 5rem;
+    margin-top: 3rem;
 }
 
 a:active {
@@ -300,4 +300,30 @@ th {
 
 div.year {
     text-align: right;
+}
+
+.mina-banner{
+    width: 100%;
+    background-size: cover;
+    background-image: url(../images/AnnouncementBanner.webp);
+    box-sizing: border-box;
+    height: 40px;
+    padding: 0 2.5rem;
+}
+.bannerFlex{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.bannerAnnouncement{
+    line-height: 2.5rem;
+}
+.wrap {
+    margin: 21vh auto 180vh ;
+    text-align: center;
+}
+.maintenanceText{
+    font-family:Monument Grotesk;
+    line-height: 58px;
+    letter-spacing: -0.01em;
 }

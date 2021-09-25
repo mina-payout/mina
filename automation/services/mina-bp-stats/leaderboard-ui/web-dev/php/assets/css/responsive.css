@@ -1,3 +1,12 @@
+@media (max-width: 410px) {
+    .mina-banner{
+        height: 52px;
+        padding: 3px 2.5rem;
+    }
+    .bannerAnnouncement{
+        line-height: 1.5rem;
+    }
+}
 @media (max-width: 575.98px) {
     .container {
         width: 91%;
@@ -14,6 +23,7 @@
         font-size: 2.0rem;
         text-align: center;
     }
+   
     .toggle-button {
         display: flex;
     }
@@ -109,6 +119,9 @@
     .Margin-right-for-text {
         margin-right: 38rem;
     }
+    .wrap {
+        margin: 18vh auto ;
+    }
 }
 
 @media (min-width: 576px) {
@@ -156,6 +169,9 @@
     .topButton {
         margin-bottom: 3rem!important;
     }
+    .wrap {
+        margin: 18vh auto ;
+    }
 }
 /* // Medium devices (tablets, 768px and up) */
 
@@ -201,6 +217,9 @@
     .mina-top-right-button {
         margin-left: 11rem!important;
     }
+    .wrap {
+        margin: 18vh auto ;
+    }
 }
 /* // Large devices (desktops, 992px and up) */
 
@@ -232,6 +251,9 @@
     }
     .mina-top-right-button {
         margin-left: 15rem!important;
+    }
+    .wrap {
+        margin: 21vh auto 180vh ;
     }
 }
 /* // Extra large devices (large desktops, 1200px and up) */
@@ -306,5 +328,8 @@
     }
     .right-box {
         width: 271px;
+    }
+    .wrap {
+        margin: 21vh auto 180vh ;
     }
 }
