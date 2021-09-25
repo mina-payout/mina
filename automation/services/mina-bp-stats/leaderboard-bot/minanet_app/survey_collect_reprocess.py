@@ -23,15 +23,6 @@ connection = psycopg2.connect(
     password=BaseConfig.POSTGRES_PASSWORD
 )
 
-conn_uptime_files = psycopg2.connect(
-    host=BaseConfig.NEW_POSTGRES_HOST,
-    port=BaseConfig.NEW_POSTGRES_PORT,
-    database=BaseConfig.NEW_POSTGRES_DB,
-    user=BaseConfig.NEW_POSTGRES_USER,
-    password=BaseConfig.NEW_POSTGRES_PASSWORD
-)
-conn_uptime_files.set_session(readonly=True)
-
 start_time = time()
 NODE_DATA_BLOCK_HEIGHT = 'nodeData.blockHeight'
 NODE_DATA_BLOCK_STATE_HASH = 'nodeData.block.stateHash'
@@ -158,7 +149,7 @@ def get_uptime_data_from_table( batch_start, batch_end):
             trim(nodedata_block_statehash) as nodedata_block_statehash , nodedata_blockheight  
         from uptime_file_history ufh where file_created_at between %s and %s """
     try:
-        bot_cursor = conn_uptime_files.cursor()
+        bot_cursor = connection.cursor()
         bot_cursor.execute(query, (batch_start, batch_end))
         result = bot_cursor.fetchall()
         batch_data_df = pd.DataFrame(result, columns=['file_name' , 'file_timestamps', 'receivedAt', 'blockproducerkey' , 'nodedata_block_statehash' , 'nodedata_blockheight'])
