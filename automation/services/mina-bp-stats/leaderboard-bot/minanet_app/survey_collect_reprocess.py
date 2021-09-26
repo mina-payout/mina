@@ -103,8 +103,8 @@ def get_provider_accounts():
 
 
 def update_scoreboard(conn, score_till_time):
-    sql = """with vars  (snapshot_date, start_date) as( values ('%s' AT TIME ZONE 'UTC', 
-			('%s' - interval '%s' day) AT TIME ZONE 'UTC')
+    sql = """with vars  (snapshot_date, start_date) as( values (%s AT TIME ZONE 'UTC', 
+			(%s - interval '%s' day) AT TIME ZONE 'UTC')
 	)
 	, epochs as(
 			select extract('epoch' from snapshot_date) as end_epoch, 
@@ -240,10 +240,9 @@ def gcs_main(read_file_interval):
                 process_loop_count += 1
                 logger.info('Processed it loop count : {0}'.format(process_loop_count))
             else:
-                logger.info('Finished processing data from table.')
-                do_process = False
-            script_start_time = ten_min_add
+               logger.info('no data found for slot {0} - {1}.'.format(script_start_time,ten_min_add))
             
+            script_start_time = ten_min_add
             if script_start_time >= script_end_time:
                 do_process = False
 
