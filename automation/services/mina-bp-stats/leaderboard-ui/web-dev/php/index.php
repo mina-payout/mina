@@ -32,7 +32,7 @@
 
         <!-- Logo And Header Section Start -->
         <div class="row mb-3 " >
-			<img src="mina-wordmark-light.svg" alt="Mina" class="mina-main-logo">
+			<img src="assets/images/mina-wordmark-light.svg" alt="Mina" class="mina-main-logo">
         </div>
         <div class="row mb-5">
             <div class="subheader">
