@@ -27,7 +27,7 @@ $pagesCount = ceil($rowCount / $perPageCount);
 $lowerLimit = ($pageNumber - 1) * $perPageCount;
 
 
-$sqlQuery = "SELECT block_producer_key , score ,score_percent FROM node_record_table WHERE application_status = true ORDER BY score DESC OFFSET ". ($lowerLimit) . " LIMIT " . ($perPageCount);
+$sqlQuery = "SELECT block_producer_key , score ,score_percent FROM nodes WHERE application_status = true and score is not null ORDER BY score DESC OFFSET ". ($lowerLimit) . " LIMIT " . ($perPageCount);
 
 $results = pg_query($conn, $sqlQuery);
 $row = pg_fetch_all($results);
