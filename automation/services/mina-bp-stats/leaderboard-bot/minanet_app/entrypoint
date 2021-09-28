@@ -21,5 +21,8 @@ formatted_job_time=$(date -d "$next_job_time" "+%H:%M %m/%d/%y")
 echo "sh /opt/minanet/email_job.sh" | at $formatted_job_time >> email_scheduler.log
 
 python survey_collect_reprocess.py 2>&1 /dev/null
+
+RUN crontab /etc/cron.d/mina_cron > /opt/minanet/cron-setup.log
+
 # Hand off to the CMD
 exec "$@"

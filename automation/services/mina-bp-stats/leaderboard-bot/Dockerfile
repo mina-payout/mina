@@ -13,7 +13,6 @@ RUN chmod +x ./email_job.sh
 RUN chmod +x ./email_scheduler.sh
 RUN chmod +x  /etc/cron.d/mina_cron
 
-RUN crontab /etc/cron.d/mina_cron > /opt/minanet/cron-setup.log
 ENTRYPOINT ["/opt/minanet/entrypoint"]
 RUN touch /var/log/cron.log
 CMD tail -f /var/log/cron.log
