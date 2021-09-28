@@ -163,7 +163,7 @@ def get_uptime_data_from_table( batch_start, batch_end):
 def gcs_main(read_file_interval):
     process_loop_count = 0
     bot_cursor = connection.cursor()
-    bot_cursor.execute("SELECT batch_end_epoch FROM bot_logs ORDER BY id DESC limit 1")
+    bot_cursor.execute("SELECT batch_end_epoch FROM bot_logs ORDER BY batch_end_epoch DESC limit 1")
     result = bot_cursor.fetchone()
     batch_end_epoch = result[0]
     script_start_time = datetime.fromtimestamp(batch_end_epoch, timezone.utc)
