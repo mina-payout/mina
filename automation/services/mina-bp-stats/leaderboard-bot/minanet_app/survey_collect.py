@@ -130,16 +130,10 @@ def execute_node_record_batch(conn, df, page_size=100):
 
 
 def execute_point_record_batch(conn, df, page_size=100):
-    """
-    Using psycopg2.extras.execute_batch() to insert point records dataframe
-    Make sure datafram has exact following columns in sequence
-    file_name,blockchain_epoch, block_producer_key, state_hash,blockchain_height,amount,bot_log_id, created_at
-    """
-
     tuples = [tuple(x) for x in df.to_numpy()]
-    query = """INSERT INTO points ( file_name,file_timestamps,blockchain_epoch, node_id, state_hash,blockchain_height,
+    query = """INSERT INTO points ( file_name,file_timestamps,blockchain_epoch, node_id, blockchain_height,
                 amount,created_at,bot_log_id) 
-            VALUES ( %s, %s,  %s, (SELECT id FROM nodes WHERE block_producer_key= %s), %s, %s, %s,  %s, %s )"""
+            VALUES ( %s, %s,  %s, (SELECT id FROM nodes WHERE block_producer_key= %s), %s, %s, %s,  %s )"""
     try:
         cursor = conn.cursor()
         extras.execute_batch(cursor, query, tuples, page_size)
@@ -153,8 +147,10 @@ def execute_point_record_batch(conn, df, page_size=100):
 
 
 def create_bot_log(conn, values):
-    query = """INSERT INTO bot_logs(name_of_file,epoch_time,files_processed,file_timestamps,
-    batch_start_epoch,batch_end_epoch) values (%s,%s, %s, %s, %s, %s) RETURNING id """
+    # files_processed file_timestamps state_hash batch_start_epoch batch_end_epoch
+
+    query = """INSERT INTO bot_logs(files_processed,file_timestamps, state_hash,
+    batch_start_epoch,batch_end_epoch) values ( %s, %s, %s, %s, %s) RETURNING id """
     try:
         cursor = conn.cursor()
         cursor.execute(query, values)
@@ -186,18 +182,23 @@ def update_email_discord_status(conn, page_size=100):
     tuples = [tuple(x) for x in spread_df.to_numpy()]
 
     try:
-        cursor = conn.cursor()
+        
         sql = """update nodes set application_status = true, discord_id =%s, block_producer_email =%s
              where block_producer_key= %s """
         cursor = conn.cursor()
         extras.execute_batch(cursor, sql, tuples, page_size)
+        sql = "select block_producer_key from nodes"
+        bot_cursor = conn.cursor()
+        bot_cursor.execute("select block_producer_key from nodes")
+        result = bot_cursor.fetchall()
+        nodes = pd.DataFrame(result, columns=['block_producer_key'])
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
         cursor.close()
         return -1
     finally:
         cursor.close()
-    return 0
+    return nodes
 
 
 def get_provider_accounts():
@@ -245,7 +246,7 @@ def update_scoreboard(conn, score_till_time):
 
 
 def gcs_main(read_file_interval):
-    update_email_discord_status(connection)
+    existing_nodes = update_email_discord_status(connection)
     process_loop_count = 0
     bot_cursor = connection.cursor()
     bot_cursor.execute("SELECT batch_end_epoch FROM bot_logs ORDER BY batch_end_epoch DESC limit 1")
@@ -280,7 +281,7 @@ def gcs_main(read_file_interval):
 
             # processing code logic
             master_df = download_files(script_offset, script_start_time, ten_min_add)
-            insert_uptime_file_history_batch(connection, master_df)
+            #insert_uptime_file_history_batch(connection, master_df)
             columns_to_drop = ['receivedFrom', 'nodeData.version', 'nodeData.daemonStatus.blockchainLength',
                            'nodeData.daemonStatus.syncStatus', 'nodeData.daemonStatus.chainId', 
                            'nodeData.daemonStatus.commitId', 'nodeData.daemonStatus.highestBlockLengthReceived',
@@ -323,8 +324,14 @@ def gcs_main(read_file_interval):
                         # data insertion to nodes
                         node_to_insert = point_record_df[['blockproducerkey']]
                         node_to_insert = node_to_insert.rename(columns={'blockproducerkey': 'block_producer_key'})
+                        # remove existing nodes from df
+                        node_to_insert = (node_to_insert.merge(existing_nodes, on='block_producer_key', how='left', indicator=True)
+                            .query('_merge == "left_only"')
+                            .drop('_merge', 1))
+                        
                         node_to_insert['updated_at'] = datetime.now(timezone.utc)
-                        execute_node_record_batch(connection, node_to_insert, 100)
+                        if node_to_insert.shpae[0]>0:
+                            execute_node_record_batch(connection, node_to_insert, 100)
                         
                         #file_name,file_timestamps,blockchain_epoch, node_id, blockchain_height, amount,created_at,bot_log_id
                         point_record_df = point_record_df.drop('nodedata_block_statehash', axis=1)
@@ -347,13 +354,13 @@ def gcs_main(read_file_interval):
             
             if script_start_time >= script_end_time:
                 do_process = False
-        try:
-            update_scoreboard(connection, script_start_time)
-        except Exception as error:
-            connection.rollback()
-            logger.error(ERROR.format(error))
-        finally:
-            connection.commit()
+    try:
+        update_scoreboard(connection, script_start_time)
+    except Exception as error:
+        connection.rollback()
+        logger.error(ERROR.format(error))
+    finally:
+        connection.commit()
             
 
 
