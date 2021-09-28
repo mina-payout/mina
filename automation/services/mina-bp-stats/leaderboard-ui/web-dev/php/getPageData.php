@@ -13,7 +13,7 @@ if (! (isset($_GET['pageNumber']))) {
 
 $perPageCount = 120;
 
-$sql = "SELECT COUNT(*) FROM nodes WHERE application_status = true";
+$sql = "SELECT COUNT(*) FROM nodes WHERE application_status = true and score is not null ";
 
 
 if ($result = pg_query($conn, $sql)) {
