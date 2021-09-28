@@ -281,7 +281,7 @@ def gcs_main(read_file_interval):
 
             # processing code logic
             master_df = download_files(script_offset, script_start_time, ten_min_add)
-            #insert_uptime_file_history_batch(connection, master_df)
+            insert_uptime_file_history_batch(connection, master_df)
             columns_to_drop = ['receivedFrom', 'nodeData.version', 'nodeData.daemonStatus.blockchainLength',
                            'nodeData.daemonStatus.syncStatus', 'nodeData.daemonStatus.chainId', 
                            'nodeData.daemonStatus.commitId', 'nodeData.daemonStatus.highestBlockLengthReceived',
