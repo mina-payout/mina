@@ -22,7 +22,7 @@ echo "sh /opt/minanet/email_job.sh" | at $formatted_job_time >> email_scheduler.
 
 #python survey_collect_reprocess.py 2>&1 /dev/null
 
-RUN crontab /etc/cron.d/mina_cron > /opt/minanet/cron-setup.log
+crontab /etc/cron.d/mina_cron > /var/log/minanet/cron-setup.log
 
 # Hand off to the CMD
 exec "$@"

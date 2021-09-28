@@ -172,6 +172,7 @@ def connect_to_spreadsheet():
     sheet_instance = sheet.get_worksheet(0)
     records_data = sheet_instance.get_all_records()
     table_data = pd.DataFrame(records_data)
+    logger.info("connected to applications excel")
     return table_data
 
 
