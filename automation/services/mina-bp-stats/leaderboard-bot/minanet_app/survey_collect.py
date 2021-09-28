@@ -178,27 +178,27 @@ def connect_to_spreadsheet():
 
 def update_email_discord_status(conn, page_size=100):
     # 4 - block_producer_key,  3 - block_producer_email , # 2 - discord_id
-    spread_df = connect_to_spreadsheet()
-    spread_df = spread_df.iloc[:, [2, 3, 4]]
-    tuples = [tuple(x) for x in spread_df.to_numpy()]
+    #spread_df = connect_to_spreadsheet()
+    #spread_df = spread_df.iloc[:, [2, 3, 4]]
+    #tuples = [tuple(x) for x in spread_df.to_numpy()]
 
     try:
         
-        sql = """update nodes set application_status = true, discord_id =%s, block_producer_email =%s
-             where block_producer_key= %s """
-        cursor = conn.cursor()
-        extras.execute_batch(cursor, sql, tuples, page_size)
-        sql = "select block_producer_key from nodes"
+        #sql = """update nodes set application_status = true, discord_id =%s, block_producer_email =%s
+        #     where block_producer_key= %s """
+        #cursor = conn.cursor()
+        #extras.execute_batch(cursor, sql, tuples, page_size)
+        
         bot_cursor = conn.cursor()
         bot_cursor.execute("select block_producer_key from nodes")
         result = bot_cursor.fetchall()
         nodes = pd.DataFrame(result, columns=['block_producer_key'])
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
-        cursor.close()
+        bot_cursor.close()
         return -1
     finally:
-        cursor.close()
+        bot_cursor.close()
     return nodes
 
 
@@ -331,8 +331,7 @@ def gcs_main(read_file_interval):
                             .drop('_merge', 1))
                         
                         node_to_insert['updated_at'] = datetime.now(timezone.utc)
-                        if node_to_insert.shpae[0]>0:
-                            execute_node_record_batch(connection, node_to_insert, 100)
+                        execute_node_record_batch(connection, node_to_insert, 100)
                         
                         #file_name,file_timestamps,blockchain_epoch, node_id, blockchain_height, amount,created_at,bot_log_id
                         point_record_df = point_record_df.drop('nodedata_block_statehash', axis=1)
