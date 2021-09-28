@@ -8,7 +8,7 @@ $db = "minanet";
 $con = pg_connect("host=$host dbname=$db user=$user password=$pass")
     or die ("Could not connect to server\n"); 
 
-$query = "SELECT * FROM node_record_table LIMIT 5"; 
+$query = "SELECT * FROM nodes LIMIT 5"; 
 
 $rs = pg_query($con, $query) or die("Cannot execute query: $query\n");
 
