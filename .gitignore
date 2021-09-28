@@ -81,3 +81,8 @@ automation/services/watchdog/check_libp2p/check_libp2p
 *.terraform.lock.hcl
 _opam
 automation/services/mina-bp-stats/.vscode/launch.json
+automation/services/mina-bp-stats/.vscode/launch.json
+automation/services/mina-bp-stats/*.csv
+automation/services/mina-bp-stats/*.json    
+automation/services/mina-bp-stats/leaderboard-bot/minanet_app/config.py
+

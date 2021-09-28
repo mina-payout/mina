@@ -208,15 +208,15 @@ def get_provider_accounts():
 
 
 def update_scoreboard(conn, score_till_time):
-    sql = """with vars  (snapshot_date, start_date) as( values ('%s' AT TIME ZONE 'UTC', 
-			('%s' - interval '%s' day) AT TIME ZONE 'UTC')
+    sql = """with vars  (snapshot_date, start_date) as( values (%s AT TIME ZONE 'UTC', 
+			(%s - interval '%s' day) AT TIME ZONE 'UTC')
 	)
 	, epochs as(
 			select extract('epoch' from snapshot_date) as end_epoch, 
 		extract('epoch' from start_date) as start_epoch from vars
 	)
-	, bot_logs as(
-		select id
+	,  b_logs as(
+		select (count(1) ) as surveys 
 		from bot_logs b , epochs e
 		where b.batch_start_epoch between start_epoch and end_epoch 
 	)
@@ -226,15 +226,11 @@ def update_scoreboard(conn, score_till_time):
          where file_timestamps between start_date and snapshot_date
          group by node_id
      )
-     , total_surveys as ( 
-     		select (count(1) ) as surveys from bot_logs, epochs 
-     		where batch_start_epoch between start_epoch and end_epoch 
-     )	
      , scores as (
          select node_id, total_points, surveys,  round( ((total_points::decimal*100) / surveys),2) as score_perc
-         from lastboard l , total_surveys t
+         from lastboard l , b_logs t
      )
-    update nodes nrt set score = s.total_points, score_percent=s.score_perc  from scores s where nrt.id=s.node_id """
+    update nodes nrt set score = s.total_points, score_percent=s.score_perc  from scores s where nrt.id=s.node_id"""
     try:
         cursor = conn.cursor()
         cursor.execute(sql, (score_till_time, score_till_time, BaseConfig.UPTIME_DAYS_FOR_SCORE,))
@@ -252,7 +248,7 @@ def gcs_main(read_file_interval):
     update_email_discord_status(connection)
     process_loop_count = 0
     bot_cursor = connection.cursor()
-    bot_cursor.execute("SELECT batch_end_epoch FROM bot_logs ORDER BY id DESC limit 1")
+    bot_cursor.execute("SELECT batch_end_epoch FROM bot_logs ORDER BY batch_end_epoch DESC limit 1")
     result = bot_cursor.fetchone()
     batch_end_epoch = result[0]
     script_start_time = datetime.fromtimestamp(batch_end_epoch, timezone.utc)
@@ -284,7 +280,6 @@ def gcs_main(read_file_interval):
 
             # processing code logic
             master_df = download_files(script_offset, script_start_time, ten_min_add)
-            print(master_df)
             insert_uptime_file_history_batch(connection, master_df)
             columns_to_drop = ['receivedFrom', 'nodeData.version', 'nodeData.daemonStatus.blockchainLength',
                            'nodeData.daemonStatus.syncStatus', 'nodeData.daemonStatus.chainId', 
