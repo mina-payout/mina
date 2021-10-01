@@ -178,16 +178,16 @@ def connect_to_spreadsheet():
 
 def update_email_discord_status(conn, page_size=100):
     # 4 - block_producer_key,  3 - block_producer_email , # 2 - discord_id
-    #spread_df = connect_to_spreadsheet()
-    #spread_df = spread_df.iloc[:, [2, 3, 4]]
-    #tuples = [tuple(x) for x in spread_df.to_numpy()]
+    spread_df = connect_to_spreadsheet()
+    spread_df = spread_df.iloc[:, [2, 3, 4]]
+    tuples = [tuple(x) for x in spread_df.to_numpy()]
 
     try:
         
-        #sql = """update nodes set application_status = true, discord_id =%s, block_producer_email =%s
-        #     where block_producer_key= %s """
-        #cursor = conn.cursor()
-        #extras.execute_batch(cursor, sql, tuples, page_size)
+        sql = """update nodes set application_status = true, discord_id =%s, block_producer_email =%s
+             where block_producer_key= %s """
+        cursor = conn.cursor()
+        extras.execute_batch(cursor, sql, tuples, page_size)
         
         bot_cursor = conn.cursor()
         bot_cursor.execute("select block_producer_key from nodes")
@@ -199,6 +199,8 @@ def update_email_discord_status(conn, page_size=100):
         return -1
     finally:
         bot_cursor.close()
+        cursor.close()
+        conn.commit()
     return nodes
 
 
@@ -235,6 +237,9 @@ def update_scoreboard(conn, score_till_time):
     update nodes nrt set score = s.total_points, score_percent=s.score_perc  from scores s where nrt.id=s.node_id"""
     try:
         cursor = conn.cursor()
+        # reset scores to 0, so that even if node is inactive for longer duration, 
+        # the score does not remain constant
+        cursor.execute("update nodes nrt set score = 0, score_percent = 0")
         cursor.execute(sql, (score_till_time, score_till_time, BaseConfig.UPTIME_DAYS_FOR_SCORE,))
     
     except (Exception, psycopg2.DatabaseError) as error:
@@ -248,6 +253,7 @@ def update_scoreboard(conn, score_till_time):
 
 def gcs_main(read_file_interval):
     existing_nodes = update_email_discord_status(connection)
+    
     process_loop_count = 0
     bot_cursor = connection.cursor()
     bot_cursor.execute("SELECT batch_end_epoch FROM bot_logs ORDER BY batch_end_epoch DESC limit 1")
