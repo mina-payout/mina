@@ -241,6 +241,24 @@ def insert_into_audit_table(file_name, epoch_id):
         cursor.close()
         connection_payout.commit()
 
+def insert_into_staking_ledger(modified_staking_df, epoch_no):
+    modified_staking_df['epoch_number']= epoch_no
+    tuples = [tuple(x) for x in modified_staking_df.to_numpy()]
+    query = '''INSERT INTO  staking_ledger (pk, balance,delegate,epoch_number) 
+                VALUES ( %s, %s, %s, %s) '''
+    result = 0
+    try:
+        cursor = connection_payout.cursor()
+        extras.execute_batch(cursor, query, tuples, 100)
+    except (Exception, psycopg2.DatabaseError) as error:
+        logger.error(ERROR.format(error))
+        connection_payout.rollback()
+        cursor.close()
+        result = -1
+    finally:
+        cursor.close()
+    return result
+
 
 def main(epoch_no, do_send_email):
     logger.info("### in payouts_calculate main for epoch {0}".format(epoch_no))
@@ -248,7 +266,7 @@ def main(epoch_no, do_send_email):
     # get staking json
     modified_staking_df, ledger_name = read_staking_json_for_epoch(epoch_no)
     # TODO : add condition if no file/dataframe found
-    #insert_into_staking_ledger(modified_staking_df, epoch_no)
+    insert_into_staking_ledger(modified_staking_df, epoch_no)
     # get foundation account details
     if not modified_staking_df.empty:
         foundation_accounts_df = read_foundation_accounts()
@@ -260,7 +278,7 @@ def main(epoch_no, do_send_email):
             delegate_record_df = calculate_payout(delegation_record_list, modified_staking_df, accounts, epoch_no)
             i = i + 1
         result = insert_data(delegate_record_df)
-        csv_name=BaseConfig.LOGGING_LOCATION+ 'calculate_summary_'+str(epoch_no)+'.csv'
+        csv_name=BaseConfig.LOGGING_LOCATION + BaseConfig.CALCULATION_CSV_FILE % (epoch_no)
         delegate_record_df.to_csv(csv_name)
         if result == 0:
             insert_into_audit_table(ledger_name, epoch_no)

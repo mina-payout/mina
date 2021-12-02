@@ -16,14 +16,13 @@ if __name__ == "__main__":
     else:
         last_epoch = c_epoch
     
-    total_epoch_to_cover = 12
-    if last_epoch>0:
-        total_epoch_to_cover = last_epoch+1
-    else:
-        staking_ledger_available = read_staking_json_list()
+    total_epoch_to_cover = 17
+    if last_epoch>=0:
         end=0
         result = 0
-        for count in range(0, total_epoch_to_cover):
+        for count in range(last_epoch, total_epoch_to_cover):
             calculate_main(count, False)
             result = v_main(count, False)
+    else:
+        total_epoch_to_cover = last_epoch+1
     sys.exit(total_epoch_to_cover)

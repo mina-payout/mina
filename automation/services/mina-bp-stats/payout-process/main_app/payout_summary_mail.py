@@ -7,15 +7,10 @@ import pandas as pd
 from logger_util import logger
 
 
-PAYOUT_SUMMARY_INFO = BaseConfig.LOGGING_LOCATION+'payout_summary_info_{0}.csv'
 ERROR = 'Error: {0}'
 
-
-
-def payout_summary_mail(payout_df, epoch_no, do_send_email):
-    logger.info('sending payout summary mail to foundation account')
-    csv_name=PAYOUT_SUMMARY_INFO.format(str(epoch_no))
-    payout_df.to_csv(csv_name)
+def payout_summary_mail(csv_name, epoch_no, do_send_email):
+   
     if do_send_email:
         message = Mail(from_email=BaseConfig.FROM_EMAIL,
                     to_emails=BaseConfig.PROVIDER_EMAIL,

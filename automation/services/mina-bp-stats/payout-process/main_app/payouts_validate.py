@@ -1,3 +1,4 @@
+from numpy.core.numeric import NaN
 import pandas as pd
 import psycopg2
 from google.cloud import storage
@@ -92,13 +93,16 @@ def determine_slot_range_for_validation(epoch_no, last_slot_validated):
     #  - when == epoch_no    : start = epoch * 7140, end = ((epoch+1)*7140) +3500
 
     # then fetch the payout transactions for above period for each winner+provider pub key combination
-    
+    start_slot = ((epoch_no) * 7140) + 3500
     end_slot = ((epoch_no+1) * 7140) + 3500 - 1
     
-    if last_slot_validated is not None :
+    # update code to use simple condition
+    # as the validation for received amount is done against Delegating account
+    # can't use same slot duration again, even for discontinued delegation
+    """ if last_slot_validated >0:
         start_slot = last_slot_validated +1
     else:
-        start_slot = 0
+        start_slot = ((epoch_no-1) * 7140) """
     return start_slot, end_slot
 
 
@@ -195,6 +199,26 @@ def check_db_restore_status(epoch_no):
         result = 1
     return result
 
+def get_payout_due_records(epoch_no):
+    undelegated_df = read_delegation_record_table(epoch_no)
+    undelegated_df = undelegated_df.loc[
+        (undelegated_df['last_delegation_epoch'] < epoch_no)]
+    filter_df = pd.DataFrame()
+    if not undelegated_df.empty:
+        filter_df = undelegated_df[
+            ['provider_pub_key', 'winner_pub_key', 'payout_balance', 'last_delegation_epoch', 'last_slot_validated']]
+        filter_df = filter_df.rename(
+            columns={'payout_balance': 'payout_obligation', 'last_delegation_epoch': 'epoch_no',
+                     'last_slot_validated': 'end_slot'})
+        filter_df['start_slot'] = filter_df['epoch_no'] * 7140 + 3500
+        filter_df['payout_received'] = 0
+        filter_df['balance_this_epoch'] = filter_df['payout_obligation']
+        filter_df['balance_cumulative'] = filter_df['payout_obligation']
+        filter_df = filter_df[
+            ['provider_pub_key', 'winner_pub_key', 'payout_obligation', 'payout_received', 'balance_this_epoch',
+             'balance_cumulative','epoch_no', 'start_slot', 'end_slot']]
+
+    return filter_df
 
 def truncate(number, digits=5) -> float:
     stepper = 10.0 ** digits
@@ -211,6 +235,7 @@ def main(epoch_no, do_send_email):
     if not staking_df.empty and result >=0:
         email_rows = []
         payouts_rows = []
+
         for row in delegation_record_df.itertuples():
             pub_key = getattr(row, "provider_pub_key")
             payout_amount = getattr(row, "payout_amount")
@@ -218,8 +243,7 @@ def main(epoch_no, do_send_email):
             last_delegation_epoch = getattr(row, 'last_delegation_epoch')
             delegate_pub_key = getattr(row, 'winner_pub_key')
             last_slot_validated = getattr(row, 'last_slot_validated')
-            filter_validation_record_df = validation_record_df.loc[validation_record_df['provider_pub_key'] == pub_key]
-
+            filter_validation_record_df = staking_df.loc[(staking_df['pk'] == pub_key) & (staking_df['delegate'] == delegate_pub_key)]
             if not filter_validation_record_df.empty:
                 start_slot, end_slot = determine_slot_range_for_validation(epoch_no, last_slot_validated)
                 payout_recieved = get_record_for_validation_for_single_acc(pub_key, start_slot, end_slot)
@@ -262,11 +286,11 @@ def main(epoch_no, do_send_email):
                 finally:
                     cursor.close()
             else:
-                logger.warning("No records found in archive db for pub key: {0}".format(pub_key))
+                logger.warning("No records found in staking ledger: {0}".format(pub_key))
         insert_into_audit_table(epoch_no)
         # sending second mail 24 hours left for making payments back to foundations account
         result = epoch_no
-        
+        undelegate_df = get_payout_due_records(epoch_no)
         email_df = pd.DataFrame(email_rows, columns=["provider_pub_key", "winner_pub_key", "payout_amount", "payout_received"])
         if do_send_email:
             second_mail(email_df, epoch_no)
@@ -275,12 +299,17 @@ def main(epoch_no, do_send_email):
                                             columns=['provider_pub_key', 'winner_pub_key', 'payout_amount',
                                                     'payout_received', 'balance_this_epoch', 'payout_balance', 'epoch_no', 'start_slot', 'end_slot']) 
         payout_summary_df = payout_summary_df.rename(columns={'payout_amount': 'payout_obligation', 'payout_balance': 'balance_cumulative'})
-        payout_summary_mail(payout_summary_df, epoch_no, do_send_email)
+        # append undelegated records
+        if not undelegate_df.empty:
+            payout_summary_df = payout_summary_df.append(undelegate_df)
+        csv_name=BaseConfig.LOGGING_LOCATION + BaseConfig.VALIDATION_CSV_FILE % (epoch_no)
+        payout_summary_df.to_csv(csv_name)
+        payout_summary_mail(csv_name, epoch_no, do_send_email)
+        
     else:
         logger.warning("Staking ledger not found or archive db not updated for epoch number {0}".format(epoch_no))
         sys.exit(-1)
     return result
-
 
 def get_last_processed_epoch_from_audit(job_type):
     audit_query = '''select epoch_id from payout_audit_log where job_type=%s 
@@ -314,11 +343,12 @@ def initialize():
     result = 0
     last_epoch = get_last_processed_epoch_from_audit('validation')
     logger.info(last_epoch)
+    result = main(last_epoch + 1, True)
     if can_run_job(last_epoch+1):
         logger.info(" validation Audit found for epoch {0}".format(last_epoch))
         result = main(last_epoch + 1, True)
     else:
-        result = last_epoch 
+        result = last_epoch
     return result
 
 # determine whether process can run now for given epoch number
