@@ -354,8 +354,7 @@ def main():
                 start = time()
                 c_selected_node, c_map = filter_state_hash_percentile(master_df)
 
-                graph_df = master_df[master_df['parent_state_hash'].isin(master_df['state_hash'].unique())]
-                batch_graph = create_graph(graph_df, p_selected_node, c_selected_node)
+                batch_graph = create_graph(master_df, p_selected_node, c_selected_node)
                 weighted_graph = apply_weights(batch_graph=batch_graph, c_selected_node=c_selected_node)
                 queue_list = p_selected_node + c_selected_node
 
