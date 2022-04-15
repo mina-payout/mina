@@ -19,6 +19,7 @@ import subprocess
 import shutil
 from multiprocessing import processing_batch_files
 import networkx as nx
+import matplotlib.pyplot as plt
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -54,13 +55,16 @@ def connect_to_spreadsheet():
     return table_data
 
 
-def get_batch_for_processing(prev_batch_end, cur_batch_end, conn=connection_aws):
+def get_batch_for_processing(prev_batch_end, cur_batch_end, conn=connection):
     cursor = conn.cursor()
     try:
         sql_select = """
-        select file_name,extract('epoch' from file_created_at)*1000,blockproducerkey, 
-        nodedata_block_statehash, parent_block_statehash, nodedata_blockheight, nodedata_slot, file_modified_at from 
-        uptime_file_history where file_created_at > %s  and file_created_at < %s order by file_created_at
+        select file_name,extract('epoch' from file_created_at)*1000,block_producer_key, s1.value block_statehash, 
+                    ps.value parent_block_statehash, nodedata_blockheight, nodedata_slot, file_modified_at  
+        from uptime_file_history u join statehash s1 ON s1.id = u.block_statehash 
+		            join statehash ps on u.parent_block_statehash = ps.id 
+                    join nodes n on n.id=u.node_id
+        where file_created_at > %s  and file_created_at < %s order by file_created_at
         """
 
         cursor.execute(sql_select, (prev_batch_end, cur_batch_end))
@@ -353,6 +357,12 @@ def create_graph(batch_df, p_selected_node_df, c_selected_node, p_map):
     parent_hash_list = batch_df['parent_state_hash'].unique()
     state_hash_list = set(list(batch_df['state_hash'].unique()) + list(p_selected_node_df['state_hash'].values))
     selected_parent = [parent for parent in parent_hash_list if parent in state_hash_list]
+    """ t1=[w[42:] for w in list(p_selected_node_df['state_hash'].values)]
+    t2=[w[42:] for w in c_selected_node]
+    t3=[w[42:] for w in state_hash_list]
+    batch_graph.add_nodes_from(t1)
+    batch_graph.add_nodes_from( t2)
+    batch_graph.add_nodes_from(t3) """
 
     batch_graph.add_nodes_from(list(p_selected_node_df['state_hash'].values))
     batch_graph.add_nodes_from(c_selected_node)
@@ -376,10 +386,31 @@ def apply_weights(batch_graph, c_selected_node, p_selected_node):
         if node in c_selected_node:
             batch_graph.nodes[node]['weight'] = 0
         elif node in p_selected_node['state_hash'].values:
-            batch_graph.nodes[node]['weight'] = p_selected_node[p_selected_node['state_hash'] == node]['weight'].values[0]
+            batch_graph.nodes[node]['weight'] = p_selected_node[p_selected_node['state_hash'] == node]['weight'].values[
+                0]
         else:
             batch_graph.nodes[node]['weight'] = 9999
-    return batch_graph
+
+    g_pos = None  # plot_graph(batch_graph, None, '1. first apply')
+    return batch_graph, g_pos
+
+
+def plot_graph(batch_graph, g_pos, title):
+    # plot the graph
+    plt.figure(figsize=(8, 8))
+    plt.title(title)
+    if not g_pos:
+        g_pos = nx.spring_layout(batch_graph, k=0.3, iterations=1)
+    nx.draw(batch_graph, pos=g_pos, connectionstyle='arc3, rad = 0.1', with_labels=False, node_size=500)
+    t_dict = {}
+    for n in batch_graph.nodes:
+        if batch_graph.nodes[n]['weight'] == 0:
+            t_dict[n] = (n[-4:], 0)
+        else:
+            t_dict[n] = (n[-4:], batch_graph.nodes[n]['weight'])
+    nx.draw_networkx_labels(batch_graph, pos=g_pos, labels=t_dict, font_size=8);
+    plt.show()  # pause before exiting
+    return g_pos
 
 
 def get_minimum_weight(graph, child_node):
@@ -390,23 +421,27 @@ def get_minimum_weight(graph, child_node):
     return child_node_weight
 
 
-def bfs(graph, queue_list, node, batch_statehash):
+def bfs(graph, queue_list, node, batch_statehash, g_pos):
     visited = list()
     visited.append(node)
+    cnt = 2
     while queue_list:
         m = queue_list.pop(0)
         for neighbour in list(graph.neighbors(m)):
             if neighbour not in visited:
                 graph.nodes[neighbour]['weight'] = get_minimum_weight(graph, neighbour)
                 visited.append(neighbour)
+                # if not neighbour in visited:
                 queue_list.append(neighbour)
+        # plot_graph(graph, g_pos, str(cnt)+'.'+m)
+        cnt += 1
     shortlisted_state = []
     hash_weights = []
     for node in list(graph.nodes()):
-        if graph.nodes[node]['weight'] < BaseConfig.MAX_DEPTH:
-            if node in batch_statehash:
-                shortlisted_state.append(node)
-                hash_weights.append(graph.nodes[node]['weight'])
+        if graph.nodes[node]['weight'] <= BaseConfig.MAX_DEPTH_INCLUDE:
+            # if node in batch_statehash:
+            shortlisted_state.append(node)
+            hash_weights.append(graph.nodes[node]['weight'])
 
     shortlisted_state_hash_df = pd.DataFrame()
     shortlisted_state_hash_df['state_hash'] = shortlisted_state
@@ -492,6 +527,7 @@ def main():
 
     relation_df, p_selected_node_df = get_previous_statehash(bot_log_id)
     p_map = get_relation_list(relation_df)
+
     logger.info("script start at {0}  end at {1}".format(prev_batch_end, cur_timestamp))
     do_process = True
     while do_process:
@@ -507,9 +543,9 @@ def main():
             break
         else:
             master_df, state_hash_df = get_batch_for_processing(prev_batch_end, cur_batch_end)
-            # comment - returns true if master_df is empty
+            # comment- returns true if master_df is empty
             uptime_flag = master_df.empty
-            # comment - run download uptime files if no data found in database for the batch timings
+
             if uptime_flag:
                 master_df = download_uptime_files(script_offset, prev_batch_end, cur_batch_end)
 
@@ -542,7 +578,6 @@ def main():
                     state_hash = pd.unique(master_df[['state_hash', 'parent_state_hash']].values.ravel('k'))
                     state_hash_to_insert = find_new_values_to_insert(existing_state_df,
                                                                      pd.DataFrame(state_hash, columns=['statehash']))
-
                     # comment- insert unique statehash into statehash table
                     if not state_hash_to_insert.empty:
                         create_statehash(connection, state_hash_to_insert)
@@ -571,18 +606,22 @@ def main():
 
                     c_selected_node, c_map = filter_state_hash_percentile(master_df)
                     batch_graph = create_graph(master_df, p_selected_node_df, c_selected_node, p_map)
-                    weighted_graph = apply_weights(batch_graph=batch_graph, c_selected_node=c_selected_node,
-                                                   p_selected_node=p_selected_node_df)
+                    weighted_graph, g_pos = apply_weights(batch_graph=batch_graph, c_selected_node=c_selected_node,
+                                                          p_selected_node=p_selected_node_df)
 
                     queue_list = list(p_selected_node_df['state_hash'].values) + c_selected_node
 
                     batch_state_hash = list(master_df['state_hash'].unique())
 
                     shortlisted_state_hash_df = bfs(graph=weighted_graph, queue_list=queue_list, node=queue_list[0],
-                                                    batch_statehash=batch_state_hash)
+                                                    batch_statehash=batch_state_hash, g_pos=g_pos)
+                    g_pos = None
                     point_record_df = master_df[
                         master_df['state_hash'].isin(shortlisted_state_hash_df['state_hash'].values)]
 
+                    for index, row in shortlisted_state_hash_df.iterrows():
+                        if not row['state_hash'] in batch_state_hash:
+                            shortlisted_state_hash_df.drop(index, inplace=True, axis=0)
                     p_selected_node_df = shortlisted_state_hash_df.copy()
                     # comment - get the parent_state_hash of shortlisted list
                     parent_hash = []
