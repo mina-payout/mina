@@ -563,8 +563,8 @@ def main():
                     master_df['slot'] = pd.to_numeric(state_hash_df['slot'])
                     master_df['parent_state_hash'] = state_hash_df['parent']
 
-                    master_df['state_hash'] = master_df['state_hash'].apply(lambda x: x.strip())
-                    master_df['parent_state_hash'] = master_df['parent_state_hash'].apply(lambda x: x.strip())
+                    #master_df['state_hash'] = master_df['state_hash'].apply(lambda x: x.strip())
+                    #master_df['parent_state_hash'] = master_df['parent_state_hash'].apply(lambda x: x.strip())
                     # comment - get unique statehash in batch data
                     state_hash = pd.unique(master_df[['state_hash', 'parent_state_hash']].values.ravel('k'))
                     state_hash_to_insert = find_new_values_to_insert(existing_state_df,
