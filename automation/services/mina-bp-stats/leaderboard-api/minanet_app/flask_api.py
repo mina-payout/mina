@@ -13,7 +13,14 @@ from flasgger import Swagger
 from flasgger import swag_from
 
 # create database connections
-connection = psycopg2.connect(
+connection_sd = psycopg2.connect(
+    host=BaseConfig.POSTGRES_HOST,
+    port=BaseConfig.POSTGRES_PORT,
+    database=BaseConfig.POSTGRES_DB,
+    user=BaseConfig.POSTGRES_USER,
+    password=BaseConfig.POSTGRES_PASSWORD
+)
+connection_snark = psycopg2.connect(
     host=BaseConfig.POSTGRES_HOST,
     port=BaseConfig.POSTGRES_PORT,
     database=BaseConfig.POSTGRES_DB,
@@ -25,22 +32,22 @@ ERROR = 'Error: {0}'
 
 
 #  get data from table
-def get_json_data():
+def get_json_data_current(conn=connection_snark):
     query = """SELECT block_producer_key , score ,score_percent FROM nodes WHERE application_status = true and score 
     is not null ORDER BY score DESC """
     try:
-        cursor = connection.cursor()
+        cursor = connection_sd.cursor()
         cursor.execute(query)
         result = [dict((cursor.description[i][0], str(value)) for i, value in enumerate(row)) for row in cursor.fetchall()]
-        connection.commit()
+        connection_sd.commit()
         logger.info("fetch data for flask app...")
     except (Exception, psycopg2.DatabaseError) as error:
         logger.info(ERROR.format(error))
-        connection.rollback()
+        connection_sd.rollback()
         cursor.close()
         return -1
     finally:
-        connection.commit()
+        connection_sd.commit()
         cursor.close()
     return result
 
@@ -58,8 +65,12 @@ swagger = Swagger(app)
 @swag_from('api_spec_without_score_at.yml', endpoint='without_score_at')
 @swag_from('api_spec.yml', endpoint='all')
 def get_score(dataType, scoreAt):
-    data = get_json_data()
+    data = None
     logger.info('dt: {0}, time:{1}'.format(dataType, scoreAt))
+    if 'snarkwork' == dataType:
+        data = get_json_data_current(connection_snark)
+    elif 'sidecar' == dataType:
+        data = get_json_data_current(connection_sd)
     return jsonify(data)
 
 
