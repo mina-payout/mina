@@ -14,18 +14,18 @@ from flasgger import swag_from
 
 # create database connections
 connection_sd = psycopg2.connect(
-    host=BaseConfig.POSTGRES_HOST,
-    port=BaseConfig.POSTGRES_PORT,
-    database=BaseConfig.POSTGRES_DB,
-    user=BaseConfig.POSTGRES_USER,
-    password=BaseConfig.POSTGRES_PASSWORD
+    host=BaseConfig.SIDECAR_HOST,
+    port=BaseConfig.SIDECAR_PORT,
+    database=BaseConfig.SIDECAR_DB,
+    user=BaseConfig.SIDECAR_USER,
+    password=BaseConfig.SIDECAR_PASSWORD
 )
 connection_snark = psycopg2.connect(
-    host=BaseConfig.POSTGRES_HOST,
-    port=BaseConfig.POSTGRES_PORT,
-    database=BaseConfig.POSTGRES_DB,
-    user=BaseConfig.POSTGRES_USER,
-    password=BaseConfig.POSTGRES_PASSWORD
+    host=BaseConfig.SNARK_HOST,
+    port=BaseConfig.SNARK_PORT,
+    database=BaseConfig.SNARK_DB,
+    user=BaseConfig.SNARK_USER,
+    password=BaseConfig.SNARK_PASSWORD
 )
 
 ERROR = 'Error: {0}'
