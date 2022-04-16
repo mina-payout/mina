@@ -32,16 +32,7 @@ connection = psycopg2.connect(
     password=BaseConfig.POSTGRES_PASSWORD
 )
 
-connection_aws = psycopg2.connect(
-    host=BaseConfig.POSTGRES_HOST_AWS,
-    port=BaseConfig.POSTGRES_PORT_AWS,
-    database=BaseConfig.POSTGRES_DB_AWS,
-    user=BaseConfig.POSTGRES_USER_AWS,
-    password=BaseConfig.POSTGRES_PASSWORD_AWS
-)
-
 ERROR = 'Error: {0}'
-
 
 def connect_to_spreadsheet():
     os.environ["PYTHONIOENCODING"] = "utf-8"
