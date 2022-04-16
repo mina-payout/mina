@@ -18,7 +18,7 @@ def get_validate_state_hash(batch_file_list, combine_list):
     file_names = ' '.join(file_list)
 
     cmd_string1 = f'docker run --cpus={BaseConfig.MAX_CPU_PER_INNSTANCE} -v {BaseConfig.ROOT_DIR}:{BaseConfig.ROOT_DIR} ' \
-                  f'gcr.io/o1labs-192920/delegation-verify:1.2.0-mainnet --block-dir {BaseConfig.BLOCK_DIR} '
+                  f'gcr.io/o1labs-192920/delegation-verify:1.2.3-mainnet --block-dir {BaseConfig.BLOCK_DIR} '
 
     command = cmd_string1 + ' ' + file_names
     logger.info('Executing command: \n {0}'.format(command))
