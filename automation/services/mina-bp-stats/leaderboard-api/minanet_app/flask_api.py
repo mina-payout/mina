@@ -76,4 +76,4 @@ def get_score(dataType, scoreAt):
 
 
 if __name__ == '__main__':
-    app.run(host=BaseConfig.API_HOST, port=BaseConfig.API_POST, debug=True)
+    app.run(host=BaseConfig.API_HOST, port=BaseConfig.API_PORT, debug=True)

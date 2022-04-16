@@ -20,4 +20,4 @@ class BaseConfig(object):
     SIDECAR_DB = str(os.environ['SIDECAR_DB']).strip()
 
     API_HOST = str(os.environ['API_HOST']).strip()
-    API_PORT=int(os.environ['API_PORT'])
+    API_PORT = int(os.environ['API_PORT'])
