@@ -1,0 +1,46 @@
+Endpoint returning a list of block producers and their respective score in decending order for given data type and at given time.
+---
+openapi: 3.0.1
+info:
+  title: Uptime data API
+servers:
+- url: http://127.0.0.1:5001/
+parameters:
+  - name: dataType
+    in: path
+    type: string
+    description: score for snarkwork or sidecar data
+    enum: ['snarkwork', 'sidecar']
+    required: false
+    default: snarkwork
+  - name: scoreAt
+    in: path
+    type: string
+    format: date-time
+    description: score the given time
+    required: false
+    example: "2021-01-30T08:30:00Z"
+    pattern: '/^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/'
+responses:
+  200:
+    description: A list of block producers and their respective score in decending order for snarkwork data at current time
+    schema:
+      type: array
+      items:
+        type: object
+        properties:
+          block_producer_key:
+            type: string
+          score:
+            type: number
+            format: float
+          score_percent:
+            type: number
+            format: float
+    examples: 
+      - "block_producer_key": "B62...1"
+        "score": "2314"
+        "score_percent": "98.80"
+      - "block_producer_key": "B62...2"
+        "score": "2311"
+        "score_percent": "98.00"
