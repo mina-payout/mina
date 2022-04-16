@@ -9,6 +9,7 @@ COPY requirements.txt .
 COPY minanet_app/mina_cron /etc/cron.d/mina_cron
 
 RUN apt-get update && apt-get -qq -y install cron at less vim
+RUN apt-get install docker.io -y
 RUN pip3 install -r requirements.txt
 RUN chmod +x ./entrypoint
 RUN chmod +x ./mina_cron.sh
