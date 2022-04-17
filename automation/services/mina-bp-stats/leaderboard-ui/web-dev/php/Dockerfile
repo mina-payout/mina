@@ -1,9 +1,8 @@
 FROM php:apache
 RUN apt-get update
 RUN apt-get install nano
-RUN apt-get install -y libpq-dev \
-  && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-  && docker-php-ext-install pdo pdo_pgsql pgsql
+RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
+    && docker-php-ext-install pgsql pdo_pgsql
   
 RUN a2enmod ssl && a2enmod rewrite
 
