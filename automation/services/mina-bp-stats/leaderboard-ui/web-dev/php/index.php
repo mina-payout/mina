@@ -103,8 +103,8 @@
 
     <div id="loaderSpin"></div>
     <div id="apiLink">
-        <div class="row d-flex mb-2">
-            <a class="Mina-Refrance-color ml-auto alignment-link" href="$_SERVER['API_HOST']/apidocs" target="_blank">Uptime API Docs</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i>
+        <div style="width:800px; margin:0 auto;">
+            <a class="Mina-Refrance-color " href="/apidocs" target="_blank">Uptime API Docs</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i>
         </div>
 
     </div>
