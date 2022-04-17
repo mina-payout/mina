@@ -1,5 +1,5 @@
 <?php
-require_once ("connection.php");
+require_once ("connectionsnark.php");
 
 
 if (! (isset($_GET['pageNumber']))) {

@@ -21,7 +21,7 @@
 </head>
 
 <body>
-	<div class="mina-banner">
+    <div class="mina-banner">
         <div class="bannerFlex">
             <div class="bannerAnnouncement"> Find the list of delegated block producers 
             <a class="Mina-Refrance-color" href="<?php $myarray = include 'config.php'; $Configurl =  $myarray[1];  echo $Configurl;  ?>" target="_blank">here</a>
@@ -31,8 +31,8 @@
     <div class="container">
 
         <!-- Logo And Header Section Start -->
-        <div class="row mb-3 " >
-			<img src="assets/images/mina-wordmark-light.svg" alt="Mina" class="mina-main-logo">
+        <div class="row mb-3 minalogo">
+            <!--    <img src="assets/images/MinaWordmark.png" alt="Mina" class="mina-main-logo"> -->
         </div>
         <div class="row mb-5">
             <div class="subheader">
@@ -61,39 +61,172 @@
             </div>
         </div>
         <!-- Top Button and Link Section End -->
+
+           <!-- Tab and Search Section Start -->
+    <div class="container mb-3 mt-0 performance-Container">
+        <div class="responcive-tab">
+            <div class="row mx-1">
+                <div class="col-12 px-0 mx-0">
+                    <div class="row">
+                        <label for="View" class="text-uppercase">VIEW</label>
+                    </div>
+                    <div class="row Mobile-Tab-view">
+                        <ul class="nav nav-pills text-uppercase text-center">
+                            <li class="nav-item left-box">
+                                <a data-toggle="pill" class="nav-link active " href="#Data-table" aria-controls="Data-table" aria-selected="true" id="table-one" onclick='showDataForTabOne (10, 1, 0)'>Sidecar Uptime</a>
+                            </li>
+                            <li class="nav-item right-box">
+                                <a data-toggle="pill" class="nav-link" href="#Data-table-2" aria-controls="Data-table-2" aria-selected="false" id="table-two" onclick='showDataForTabTwo (10, 1, 0)'>Snark Worker uptime</a>
+                            </li>
+                        </ul>
+                        <div class="bottom-plate-tab"></div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 ">
+                    
+                    <div class="row">
+                        <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Search Public Key" onkeyup="search_result()"> 
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- Tab and Search Section End -->
     </div>
 
 
 
     <!-- Data Table Section Start -->
-    <div id="results"></div>
-    <div id="loader"></div>
+    <div id="result"></div>
+    <div id="result2"></div>
 
+    <div id="loaderSpin"></div>
+    <div id="apiLink">
+        <div class="row d-flex mb-2">
+            <a class="Mina-Refrance-color ml-auto alignment-link" href="$_SERVER['API_HOST']/apidocs" target="_blank">Uptime API Docs</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i>
+        </div>
+
+    </div>
     
     <!-- Data Table Section End -->
 
     
 
     <script type="text/javascript">
-    function showRecords(perPageCount, pageNumber) {
+   var tabledata ;
+   var tabledataSnark ;
+    function getRecords(perPageCount, pageNumber ) {
+    
         $.ajax({
             type: "GET",
             url: "getPageData.php",
-            data: "pageNumber=" + pageNumber,
+            data: {pageNumber: pageNumber},
+            
             cache: false,
     		beforeSend: function() {
-                $('#loader').html('<div class="spinner-border d-flex mx-auto" role="status"><span class="sr-only">Loading...</span></div>');
+                $('#loaderSpin').html('<div class="spinner-border d-flex mx-auto" role="status"><span class="sr-only">Loading...</span></div>');
     			
             },
-            success: function(html) {
-                $("#results").html(html);
-                $('#loader').html(''); 
+            success: function(response) {
+                 tabledata = response;           
+                 $("ul li a").each(function () {
+                    if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
+                        showDataForTabOne (10, 1, 0);
             }
+            // else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
+            //             alert("hello tab 2");
+            //             showDataForTabTwo (10, 1, 0);
+            // }
+        });
+                $('#loaderSpin').html(''); 
+            },
+          
         });
     }
+
+    function getRecordsForSnark(perPageCount, pageNumber ) {
     
+    $.ajax({
+        type: "GET",
+        url: "getPageDataForSnark.php",
+        data: {pageNumber: pageNumber},
+        
+        cache: false,
+        beforeSend: function() {
+            $('#loaderSpin').html('<div class="spinner-border d-flex mx-auto" role="status"><span class="sr-only">Loading...</span></div>');
+            
+        },
+        success: function(response) {
+            // alert(response);
+            tabledataSnark = response;           
+             $("ul li a").each(function () {
+                 if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
+                    showDataForTabTwo (10, 1, 0);
+        }
+    });
+            $('#loaderSpin').html(''); 
+        },
+      
+    });
+}
+    
+    function showDataForTabOne(perPageCount, pageNumber, pagestart , input ) {
+       if(!input){input = null}
+    $.ajax({
+        type: "POST",
+        url: "showDataForTabOne.php",
+        data: {pageNumber: pageNumber ,pagestart:pagestart, tabledata : tabledata , search_input : input},
+        
+        cache: false,
+        success: function(html) {
+            $('#loaderSpin').html(''); 
+            $("#result2").html('');
+            $("#result").html(html);
+        },
+       
+    });
+}
+
+function showDataForTabTwo(perPageCount, pageNumber, pagestart ,input ) {
+    if(!input){input = null}
+       $.ajax({
+           type: "POST",
+           url: "showDataForTabTwo.php",
+           data: {pageNumber: pageNumber ,pagestart:pagestart, tabledata : tabledataSnark , search_input : input},
+           
+           cache: false,
+           success: function(html) {
+               $('#loaderSpin').html(''); 
+               $("#result").html('');
+               $("#result2").html(html);
+           },
+       });
+   }
+
+function search_result() {
+    let input = document.getElementById('search-input').value
+    input=input.toLowerCase();
+    if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
+                        showDataForTabOne (10, 1, 0, input);
+            }
+            else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
+                        showDataForTabTwo (10, 1, 0 , input);
+            }
+
+}
     $(document).ready(function() {
-        showRecords(10, 1);
+        getRecords(10, 1);
+        getRecordsForSnark(10, 1);
+
+        $('input[type=search]').on('search', function () {
+            if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
+                        showDataForTabOne (10, 1, 0);
+            }
+            else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
+                        showDataForTabTwo (10, 1, 0);
+            }
+        });
     });
 </script>
 </body>
