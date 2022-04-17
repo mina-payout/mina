@@ -1,6 +1,12 @@
 FROM php:apache
 RUN apt-get update
-RUN apt-get install nano
+RUN apt-get -y install nano wget
+
+RUN wget https://security.debian.org/debian-security/pool/updates/main/p/postgresql-11/libpq5_11.14-0+deb10u1_amd64.deb
+RUN dpkg -i libpq5_11.14-0+deb10u1_amd64.deb
+RUN wget https://security.debian.org/debian-security/pool/updates/main/p/postgresql-11/libpq-dev_11.14-0+deb10u1_amd64.deb
+RUN dpkg -i libpq-dev_11.14-0+deb10u1_amd64.deb
+
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install pgsql pdo_pgsql
   
