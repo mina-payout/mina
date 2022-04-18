@@ -111,7 +111,7 @@ $counter = $lowerLimit + 1;
             </table>
         </div>
         <div id="apiLink" class="d-flex flex-row-reverse">
-            <a class="Mina-Refrance-color " href="/apidocs" target="_blank">MINA Open API for Uptime Data</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i>
+            <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="/apidocs" target="_blank">MINA Open API for Uptime Data</a>
         </div>
     </div>
     <div style="height: 30px;"></div>
