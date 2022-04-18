@@ -23,7 +23,6 @@
         font-size: 2.0rem;
         text-align: center;
     }
-   
     .toggle-button {
         display: flex;
     }
@@ -87,9 +86,9 @@
     .bottom-plate-tab {
         display: none!important;
     }
-    .right-box {
+    /* .right-box {
         width: 257px;
-    }
+    } */
     .delegation-Bottom-Button>.bottomPlate {
         left: 4px!important;
         top: -47px;
@@ -121,6 +120,15 @@
     }
     .wrap {
         margin: 18vh auto ;
+    }
+    .Mobile-Tab-view{
+        display: block;
+    }
+    .pagination {
+        margin-top: 0px!important;
+    }
+    .pagination>li.ml-5{
+        margin-left: 1rem!important;
     }
 }
 
@@ -169,8 +177,17 @@
     .topButton {
         margin-bottom: 3rem!important;
     }
-    .wrap {
-        margin: 18vh auto ;
+    .left-box,.right-box{
+        width: 500px!important;
+    }
+    .bottom-plate-tab {
+        left: 0px;
+    }
+    .pagination {
+        margin-top: 0px!important;
+    }
+    .justify-content-end {
+        justify-content: center!important;
     }
 }
 /* // Medium devices (tablets, 768px and up) */
@@ -220,6 +237,9 @@
     .wrap {
         margin: 18vh auto ;
     }
+    .left-box, .right-box {
+        width: 682px!important;
+    }
 }
 /* // Large devices (desktops, 992px and up) */
 
@@ -252,8 +272,8 @@
     .mina-top-right-button {
         margin-left: 15rem!important;
     }
-    .wrap {
-        margin: 21vh auto 180vh ;
+    .left-box, .right-box {
+        width: 768px!important;
     }
 }
 /* // Extra large devices (large desktops, 1200px and up) */
@@ -296,7 +316,7 @@
         text-align: center;
     }
     .table thead th {
-        vertical-align: middle;
+        vertical-align: top;
     }
     .text-left {
         text-align: left!important;
@@ -326,10 +346,16 @@
     .bottom-plate-tab {
         display: block!important;
     }
-    .right-box {
-        width: 271px;
+    .left-box, .right-box {
+        width: 550px!important;
     }
     .wrap {
         margin: 21vh auto 180vh ;
+    }
+    .pagination {
+        margin-top: -72px!important;
+    }
+    .justify-content-center{
+        justify-content: end!important;
     }
 }
