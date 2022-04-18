@@ -52,7 +52,8 @@ def get_json_data_current(conn=connection_snark):
 def get_json_data(conn=connection_snark, score_at=None):
     if 'current'==score_at:
         return get_json_data_current(conn)
-
+    
+    score_time = datetime.strptime(score_at, '%Y-%m-%dT%H:%M:%SZ')
     query = """with vars  (snapshot_date, start_date) as( values (%s::timestamp , 
 			(%s::timestamp)- interval '60' day )
 	)
@@ -76,9 +77,8 @@ def get_json_data(conn=connection_snark, score_at=None):
          order by 3 desc """
     try:
         cursor = conn.cursor()
-        cursor.execute(query, (score_at, score_at))
+        cursor.execute(query, (score_time, score_time))
         result = [dict((cursor.description[i][0], str(value)) for i, value in enumerate(row)) for row in cursor.fetchall()]
-        logger.info("fetch data for flask app...")
     except (Exception, psycopg2.DatabaseError) as error:
         logger.info(ERROR.format(error))
         cursor.close()
