@@ -316,7 +316,7 @@
         text-align: center;
     }
     .table thead th {
-        vertical-align: middle;
+        vertical-align: top;
     }
     .text-left {
         text-align: left!important;

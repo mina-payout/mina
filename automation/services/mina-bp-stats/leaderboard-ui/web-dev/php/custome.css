@@ -227,9 +227,13 @@ th {
     font-size: 12px;
     line-height: 16px;
     border-radius: 0px;
-    padding-top: 15px;
+    padding-top: 7px;
 }
 
+.beta-text{
+    color: #a40c3e;
+    font-size: 14px;
+}
 .right-box {
     border: 1px solid #2D2D2D;
     box-sizing: border-box;
