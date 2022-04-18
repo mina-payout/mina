@@ -14,7 +14,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
     
-    <link rel="stylesheet" href="assets/css/custome.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
     <link rel="stylesheet" href="assets/css/responsive.css">
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
@@ -128,7 +128,12 @@
 
     <div id="loaderSpin"></div>
 
-    
+    <div id="apiLink">
+        <div style="width:800px; margin:0 auto;">
+            <a class="Mina-Refrance-color " href="/apidocs" target="_blank">Uptime API Docs</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i>
+        </div>
+
+    </div>
     <!-- Data Table Section End -->
 
     
