@@ -32,7 +32,7 @@
 
         <!-- Logo And Header Section Start -->
         <div class="row mb-3 minalogo">
-            <!--    <img src="assets/images/MinaWordmark.png" alt="Mina" class="mina-main-logo"> -->
+               <img src="assets/images/MinaWordmark.png" alt="Mina" class="mina-main-logo">
         </div>
         <div class="row mb-5">
             <div class="subheader">
@@ -128,6 +128,7 @@
 
     <div id="loaderSpin"></div>
 
+    
     <!-- Data Table Section End -->
 
     
