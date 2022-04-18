@@ -33,3 +33,4 @@ $sqlQuery = "SELECT block_producer_key , score ,score_percent FROM nodes WHERE a
     echo json_encode(array('row' => $row, 'rowCount' => $rowCount));
 
 ?>
+    
