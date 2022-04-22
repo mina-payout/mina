@@ -21,3 +21,4 @@ class BaseConfig(object):
 
     API_HOST = str(os.environ['API_HOST']).strip()
     API_PORT = int(os.environ['API_PORT'])
+    CACHE_TIMEOUT = int(os.environ['CACHE_TIMEOUT'])
