@@ -6,12 +6,15 @@ import subprocess as sp
 import pytz
 from dateutil.relativedelta import relativedelta
 
+from logger_util import logger
+
 utc = pytz.UTC
 
 
 def find_epoch_no():
-    print("Starting Of python Script")
+    logger.info("Starting Of python Script")
     script_output = sp.getoutput('python payouts_calculate.py')
+
     script_output = script_output.splitlines()[0]
     return script_output
 
@@ -22,9 +25,10 @@ def extract_date_from_text_file():
     matches = list(datefinder.find_dates(content))
     if len(matches) > 0:
         for genesis_t in matches:
-            print(genesis_t)
+            logger.info(genesis_t)
+
     else:
-        print("Found no dates.")
+        logger.info("Found no dates.")
     return genesis_t
 
 
@@ -68,7 +72,7 @@ def main():
 
     # Scheduling task
     next_day = next_day + relativedelta(minutes=30)
-
+    print(next_day)
     def job(text):
         t = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
         print('{} --- {}'.format(text, t))
