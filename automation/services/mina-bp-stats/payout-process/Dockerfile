@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.6
 WORKDIR /opt/minanet/payout_process
 
 COPY requirements.txt .
@@ -8,7 +8,7 @@ RUN pip3 install -r requirements.txt
 COPY main_app/* ./
 COPY main_app/entrypoint ./entrypoint
 RUN chmod +x ./entrypoint
-RUN chmod +x ./*.sh
+#RUN chmod +x ./*.sh
 
 RUN chmod 644 /etc/crontab
 
