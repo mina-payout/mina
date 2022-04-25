@@ -6,11 +6,13 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 import pytz
 from dateutil.relativedelta import relativedelta
 
+from logger_util import logger
+
 utc = pytz.UTC
 
 
 def find_epoch_no():
-    print("Starting Of python Script")
+    logger.info("Starting Of python Script")
     script_output = subprocess.call(['python', r"/home/supriyab/PycharmProjects/minanet_phase_2/payouts_validate.py"])
     return script_output
 
@@ -21,9 +23,9 @@ def extract_date_from_text_file():
     matches = list(datefinder.find_dates(content))
     if len(matches) > 0:
         for genesis_t in matches:
-            print(genesis_t)
+            logger.info(genesis_t)
     else:
-        print("Found no dates.")
+        logger.info("Found no dates.")
     return genesis_t
 
 
@@ -61,6 +63,7 @@ def main():
     next_day = next_job_time + timedelta(days=1)
     next_day = next_day.date()
     next_day = next_day + relativedelta(minutes=30)
+    print(next_day)
 
     # Scheduling task
     def job(text):
