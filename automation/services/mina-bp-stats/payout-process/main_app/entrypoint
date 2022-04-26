@@ -1,3 +1,3 @@
 #!/bin/sh
-python schedule_calculate
-pytthon schedule_validate
+python schedule_calculate.py
+python schedule_validate.py
