@@ -5,7 +5,8 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 import subprocess as sp
 import pytz
 from dateutil.relativedelta import relativedelta
-
+import warnings
+warnings.filterwarnings("ignore")
 from logger_util import logger
 
 utc = pytz.UTC
@@ -14,13 +15,12 @@ utc = pytz.UTC
 def find_epoch_no():
     logger.info("Starting Of python Script")
     script_output = sp.getoutput('python payouts_calculate.py')
-
     script_output = script_output.splitlines()[0]
     return script_output
 
 
 def extract_date_from_text_file():
-    file = open("genesis.txt", 'r')
+    file = open("genesis_time.txt", 'r')
     content = file.read()
     matches = list(datefinder.find_dates(content))
     if len(matches) > 0:
@@ -48,7 +48,7 @@ def main():
     script_output = find_epoch_no()
     script_output = int(script_output)
 
-    if script_output <= 1:
+    if int(script_output) <= 1:
         minutes_to_add = 1
 
     else:
