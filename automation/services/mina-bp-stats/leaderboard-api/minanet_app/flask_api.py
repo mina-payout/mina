@@ -54,27 +54,28 @@ def get_json_data(conn=connection_snark, score_at=None):
         return get_json_data_current(conn)
     
     score_time = datetime.strptime(score_at, '%Y-%m-%dT%H:%M:%SZ')
-    query = """with vars  (snapshot_date, start_date) as( values (%s::timestamp , 
+    query = """with vars  (end_date, start_date) as( values (%s::timestamp , 
 			(%s::timestamp)- interval '60' day )
 	)
 	, epochs as(
-			select extract('epoch' from snapshot_date) as end_epoch, 
+		select extract('epoch' from end_date) as end_epoch,
 		extract('epoch' from start_date) as start_epoch from vars
 	)
-	,  b_logs as(
-		select (count(1) ) as surveys 
-		from bot_logs b , epochs e
-		where b.batch_start_epoch between start_epoch and end_epoch 
+	, b_logs as(
+		select (count(1) ) as surveys
+		from bot_logs b , vars e
+		where b.file_timestamps between start_date and end_date
 	)
-	,lastboard as (
-         select node_id,count(distinct bot_log_id) total_points
-         from  points prt , vars 
-         where (file_timestamps + (330 * interval '1 minute')) between start_date and snapshot_date
-         group by node_id
-     )
-         select node_id, n.block_producer_key , total_points, surveys,  trunc( ((total_points::decimal*100) / surveys),2) as score_perc
-         from lastboard l join nodes n on l.node_id=n.id, b_logs t 
-         order by 3 desc """
+	, scores as (
+		select p.node_id, count(p.bot_log_id) bp_points
+		from points_summary p join bot_logs b on p.bot_log_id =b.id, vars
+		where b.file_timestamps between start_date and end_date
+		group by 1
+	)
+	select n.block_producer_key , bp_points, surveys, 
+		trunc( ((bp_points::decimal*100) / surveys),2) as score_percent
+	from scores l join nodes n on l.node_id=n.id, b_logs t
+	order by 2 desc	; """
     try:
         cursor = conn.cursor()
         cursor.execute(query, (score_time, score_time))
@@ -112,4 +113,4 @@ def get_score(dataType='snarkwork', scoreAt='current'):
 
 
 if __name__ == '__main__':
-    app.run(host=BaseConfig.API_HOST, port=BaseConfig.API_PORT, debug=True)
+    app.run(host=BaseConfig.API_HOST, port=BaseConfig.API_PORT, debug=False)
