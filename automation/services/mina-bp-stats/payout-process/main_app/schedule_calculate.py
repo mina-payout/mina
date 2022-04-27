@@ -48,7 +48,7 @@ def main():
     script_output = find_epoch_no()
     script_output = int(script_output)
 
-    if int(script_output) <= 1:
+    if script_output <= 1:
         minutes_to_add = 1
 
     else:
