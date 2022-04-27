@@ -7,7 +7,7 @@ from config import BaseConfig
 from logger_util import logger
 from flask import jsonify
 from datetime import datetime, timedelta, timezone
-
+from flask_caching import Cache
 
 from flasgger import Swagger
 from flasgger import swag_from
@@ -30,8 +30,21 @@ connection_snark = psycopg2.connect(
 
 ERROR = 'Error: {0}'
 
+config = {
+    "DEBUG": True,  # some Flask specific configs
+    "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": BaseConfig.CACHE_TIMEOUT
+}
+
+# create app instance
+app = Flask(__name__)
+app.config.from_mapping(config)
+cache = Cache(app)
+swagger = Swagger(app)
+
 
 #  get data from table
+@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_json_data_current(conn=connection_snark):
     query = """SELECT block_producer_key , score ,score_percent FROM nodes WHERE application_status = true and score 
     is not null ORDER BY score DESC """
@@ -49,6 +62,7 @@ def get_json_data_current(conn=connection_snark):
     return result
 
 #  get score at specific time
+@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_json_data(conn=connection_snark, score_at=None):
     if 'current'==score_at:
         return get_json_data_current(conn)
@@ -88,9 +102,7 @@ def get_json_data(conn=connection_snark, score_at=None):
         cursor.close()
     return result
 
-# create app instance
-app = Flask(__name__)
-swagger = Swagger(app)
+
 
 
 #path params 1
