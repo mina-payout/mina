@@ -14,7 +14,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
     
-    <link rel="stylesheet" href="assets/css/custom.css">
+    <link rel="stylesheet" href="assets/css/custome.css">
     <link rel="stylesheet" href="assets/css/responsive.css">
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
@@ -32,7 +32,7 @@
 
         <!-- Logo And Header Section Start -->
         <div class="row mb-3 minalogo">
-               <img src="assets/images/mina-wordmark-light.svg" alt="Mina" class="mina-main-logo">
+               <img src="assets/images/MinaWordmark.png" alt="Mina" class="mina-main-logo d-block mx-auto mx-md-0">
         </div>
         <div class="row mb-5">
             <div class="subheader">
@@ -50,14 +50,24 @@
                 <div class="bottomPlate for-normal" id="leaderBoardbtn">
                 </div>
             </div>
-            <div class="col-12 col-md-6  Link-responcive">
-                <div class="row d-flex mb-2">
-                    <a class="Mina-Refrance-color ml-auto alignment-link" href="https://forums.minaprotocol.com/t/delegation-program-faq/4246" target="_blank">FAQ</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i>
+            <div class="col-12 col-md-6 mx-0 px-0 Link-responcive">
+                <div class="d-flex flex-row-reverse mb-2">
+                    <div class="flex-column d-none d-sm-block">
+                    <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://forums.minaprotocol.com/t/delegation-program-faq/4246" target="_blank">FAQ</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                    <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://minaprotocol.com/blog/mina-foundation-delegation-policy" target="_blank">Mina Foundation Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                    </div>
                 </div>
-                <div class="row Link-responcive">
-                    <a class="Mina-Refrance-color ml-auto alignment-link" href="https://minaprotocol.com/blog/mina-foundation-delegation-policy" target="_blank">Mina Foundation Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i>
+                <!-- for mobile view -->
+                <div class="d-flex flex-row"> 
+                    <div class="d-flex d-sm-none">
+                        <div class="p-1"><a class="Mina-Refrance-color alignment-link" href="https://forums.minaprotocol.com/t/delegation-program-faq/4246" target="_blank">FAQ</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                        <div class="p-1"><a class="Mina-Refrance-color alignment-link" href="https://minaprotocol.com/blog/mina-foundation-delegation-policy" target="_blank">Mina Foundation Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                    </div>
+                </div>
+                <!-- <div class="row Link-responcive"> -->
+                   
                     <!-- <a class="Mina-Refrance-color ml-auto alignment-link" href="https://medium.com/o1labs/o-1-labs-delegation-policy-786bf96f9fdd" target="_blank">O(1) Labs Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i> -->
-                </div>
+                <!-- </div> -->
             </div>
         </div>
         <!-- Top Button and Link Section End -->
@@ -67,7 +77,7 @@
             </div>
         </div>
            <!-- Tab and Search Section Start -->
-    <div class="container mb-3 mt-0 performance-Container">
+    <div class="container mb-3 mt-0 mx-sm-0 performance-Container">
         <div class="responcive-tab">
             <div class="row mx-1">
                 <div class="col-12 px-0 mx-0">

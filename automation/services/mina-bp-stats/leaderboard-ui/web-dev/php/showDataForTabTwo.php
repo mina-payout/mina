@@ -41,7 +41,7 @@ $counter = $lowerLimit + 1;
 ?>
 <div class="container mb-3 mt-0 performance-Container">
 <div class="row mx-1 d-flex justify-content-end">
-<div class="col-12 col-sm-6 col-md-12 px-0 mx-0">
+<div class="d-flex flex-row-reverse mb-2 mx-sm-auto mx-lg-0">
 <nav aria-label="Page navigation example" style="<?php if($MaintenanceMode == true) {echo 'display: none;';}?>">
   <ul class="pagination justify-content-center">
     <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
@@ -111,7 +111,7 @@ $counter = $lowerLimit + 1;
             </table>
         </div>
         <div id="apiLink" class="d-flex flex-row-reverse">
-            <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="<?php echo $API_HOST; ?>" target="_blank">MINA Open API for Uptime Data</a>
+        <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="/apidocs" target="_blank">MINA Open API for Uptime Data</a>
         </div>
     </div>
     <div style="height: 30px;"></div>

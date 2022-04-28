@@ -227,21 +227,25 @@ th {
     font-size: 12px;
     line-height: 16px;
     border-radius: 0px;
-    padding-top: 15px;
+    padding-top: 7px;
 }
 
+.beta-text{
+    color: #a40c3e;
+    font-size: 14px;
+}
 .right-box {
     border: 1px solid #2D2D2D;
     box-sizing: border-box;
-    width: 271px;
-    height: 48px;
+    width: 550px;
+    height: 49px;
     border-radius: 0px 1px 4px;
 }
 
 .left-box {
     border: 1px solid #2D2D2D;
     box-sizing: border-box;
-    width: 257px;
+    width: 550px;
     height: 48px;
     border-radius: 4px 1px 0px 0px;
     z-index: 15;
@@ -249,7 +253,7 @@ th {
 
 .bottom-plate-tab {
     position: relative;
-    width: 528px;
+    width: 1098px;
     height: 48px;
     top: -45px;
     left: 2px;
@@ -265,8 +269,9 @@ th {
     box-sizing: border-box;
     box-shadow: inset 0px 2px 2px rgba(0, 0, 0, 0.15);
     border-radius: 2px;
-    width: 233px;
     height: 52px;
+    z-index: 9999;
+    padding-bottom: 22px;
 }
 
 
@@ -326,4 +331,10 @@ div.year {
     font-family:Monument Grotesk;
     line-height: 58px;
     letter-spacing: -0.01em;
+}
+.pagination {
+    margin-top: -72px;
+}
+.pagination>.page-item>.page-link {
+    height: 50px;
 }

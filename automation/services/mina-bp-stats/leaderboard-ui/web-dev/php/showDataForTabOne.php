@@ -23,7 +23,6 @@ $pagesCount = ceil($rowCount / $perPageCount);
 $lowerLimit = ($pageNumber - 1) * $perPageCount;
 $pagestart = $_POST['pagestart'] ?? null;
 $rowData = $tabledata['row'];
-
 if($SearchInputData != null){
     $newArray = array();
     foreach ($rowData as $key => $rowDataKey){
@@ -35,24 +34,23 @@ if($SearchInputData != null){
     $rowCount = count($newArray);
     $pagesCount = ceil($rowCount / $perPageCount);
 }
-
 $row = array_slice($rowData,$pagestart,$perPageCount);
 $counter = $lowerLimit + 1;
 ?>
 <div class="container mb-3 mt-0 performance-Container">
 <div class="row mx-1 d-flex justify-content-end">
-<div class="col-12 col-sm-6 col-md-12 px-0 mx-0">
+<div class="d-flex flex-row-reverse mb-2 mx-sm-auto mx-lg-0">
 <nav aria-label="Page navigation example" style="<?php if($MaintenanceMode == true) {echo 'display: none;';}?>">
   <ul class="pagination justify-content-center">
     <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-      <a class="page-link" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">First</a>
+      <a class="page-link" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">First</a>
     </li>
     <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($counter - 1);  ?>');">Prev</a></li>
+        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($counter - 1);  ?>');">Prev</a></li>
     <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($counter - 1);  ?>');">Next</a></li>
+        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($counter - 1);  ?>');">Next</a></li>
     <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-      <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');">Last</a>
+      <a class="page-link" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');">Last</a>
     </li>
     <li class = "ml-5 p-2">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li>
   </ul>
@@ -62,7 +60,7 @@ $counter = $lowerLimit + 1;
 </div>
 
 <div class="container pr-0 pl-0 mt-0 mb-5 tab-content">
-        <div class="table-responsive table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl tab-pane fade show active" id="Data-table-2" role="tabpanel" aria-labelledby="Data-table-2">
+        <div class="table-responsive table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl tab-pane fade show active" id="Data-table" role="tabpanel" aria-labelledby="Data-table">
             <table class="table table-striped text-center">
                 <thead>
                     <tr class="border-top-0">
@@ -86,7 +84,7 @@ $counter = $lowerLimit + 1;
                     </td>
                 </tr>
                 <?php 
-                 
+
                  if($MaintenanceMode != true){
                 foreach ($row as $key => $data) { 
                    
@@ -111,7 +109,7 @@ $counter = $lowerLimit + 1;
             </table>
         </div>
         <div id="apiLink" class="d-flex flex-row-reverse">
-            <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="<?php echo $API_HOST; ?>" target="_blank">MINA Open API for Uptime Data</a>
+        <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="/apidocs" target="_blank">MINA Open API for Uptime Data</a>
         </div>
     </div>
     <div style="height: 30px;"></div>

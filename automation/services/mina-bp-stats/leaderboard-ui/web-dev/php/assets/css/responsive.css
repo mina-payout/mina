@@ -14,6 +14,13 @@
         margin-left: 15px;
         align-content: center;
     }
+    .performance-Container {
+        margin-right: 0px;
+        margin-left: 0px;
+        padding-right: 0px;
+        padding-left: 0px;
+
+    }
     /* for delegation policy */
     .row>p {
         text-align: justify;
@@ -37,8 +44,8 @@
     .Link-responcive>.row {
         justify-content: left;
     }
-    .Link-responcive>.row>.ml-auto,
-    .mx-auto {
+    .Link-responcive>.row>.ml-auto
+    {
         margin-left: 0px!important
     }
     .Responcive-Bottom-Padding>.topButton {
@@ -74,7 +81,8 @@
     .subheader>p {
         font-size: 24px;
         line-height: 35px;
-        text-align: left;
+        text-align: center;
+        margin-bottom:0px ;
     }
     .performance-Container>.responcive-tab>.row {
         display: flex;
@@ -158,8 +166,8 @@
     .Link-responcive>.row {
         justify-content: center;
     }
-    .Link-responcive>.row>.ml-auto,
-    .mx-auto {
+    .Link-responcive>.row>.ml-auto
+     {
         margin-left: 0px!important
     }
     .delegationButton {
@@ -185,9 +193,6 @@
     }
     .pagination {
         margin-top: 0px!important;
-    }
-    .justify-content-end {
-        justify-content: center!important;
     }
 }
 /* // Medium devices (tablets, 768px and up) */
@@ -291,8 +296,7 @@
     .Link-responcive>.row {
         justify-content: unset!important;
     }
-    .Link-responcive>.row>.ml-auto,
-    .mx-auto {
+    .Link-responcive>.row>.ml-auto{
         margin-left: auto!important
     }
     .delegationButton {
@@ -316,7 +320,7 @@
         text-align: center;
     }
     .table thead th {
-        vertical-align: top;
+        vertical-align: middle;
     }
     .text-left {
         text-align: left!important;
