@@ -509,7 +509,7 @@ def get_relation_list(df):
 
 
 def main():
-    update_email_discord_status(connection)
+    #update_email_discord_status(connection)
     process_loop_count = 0
     prev_batch_end, cur_batch_end, bot_log_id = get_batch_timings(connection)
     cur_timestamp = datetime.now(timezone.utc)
