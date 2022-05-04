@@ -1,3 +1,4 @@
 #!/bin/sh
-python schedule_calculate.py
-python schedule_validate.py
+exec python3 schedule_calculate.py &
+sleep 1m
+exec python3 schedule_validate.py
