@@ -72,8 +72,11 @@
         </div>
         <!-- Top Button and Link Section End -->
         <div class="row mb-4">
-            <div class="">
+        <div class="Sidecar-Uptime-text">
                 <p>Ranking for the Mina Foundation Uptime Leaderboard are based on data from the Sidecar Uptime System.</p>
+            </div>
+            <div class="Snark-work-Uptime-text">
+                <p>Ranking for the Mina Foundation Uptime Leaderboard are based on data from the Snark-work Uptime System.</p>
             </div>
         </div>
            <!-- Tab and Search Section Start -->
@@ -203,6 +206,8 @@
             $('#loaderSpin').html('');
             $("#result2").html('');
             $("#result").html(html);
+            $('.Sidecar-Uptime-text').show();
+            $('.Snark-work-Uptime-text').hide();
         },
 
     });
@@ -220,6 +225,8 @@ function showDataForTabTwo(perPageCount, pageNumber, pagestart ,input ) {
                $('#loaderSpin').html('');
                $("#result").html('');
                $("#result2").html(html);
+               $('.Sidecar-Uptime-text').hide();
+               $('.Snark-work-Uptime-text').show();
            },
        });
    }
@@ -239,6 +246,7 @@ function search_result() {
     $(document).ready(function() {
         getRecords(10, 1);
         getRecordsForSnark(10, 1);
+        $('.Snark-work-Uptime-text').hide();
 
         $('input[type=search]').on('search', function () {
             if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
