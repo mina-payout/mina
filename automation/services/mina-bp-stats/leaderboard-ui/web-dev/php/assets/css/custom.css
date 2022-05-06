@@ -36,6 +36,11 @@ a:hover {
     margin-right: 38rem!important;
 }
 
+.row {
+    margin-right: unset;
+    margin-left: unset;
+}
+
 .row>p {
     font-size: 18px;
     line-height: 27px;
@@ -217,6 +222,8 @@ th {
     color: #fff;
     background-color: #FF603B;
     height: 46px;
+    line-height: 46px;
+    padding: 0px;
 }
 
 .nav-pills .nav-link,
@@ -225,9 +232,9 @@ th {
     background-color: #fff;
     letter-spacing: 1px;
     font-size: 12px;
-    line-height: 16px;
+    line-height: 46px;
     border-radius: 0px;
-    padding-top: 7px;
+    padding: 0px;
 }
 
 .beta-text{
@@ -238,7 +245,7 @@ th {
     border: 1px solid #2D2D2D;
     box-sizing: border-box;
     width: 550px;
-    height: 49px;
+    height: 48px;
     border-radius: 0px 1px 4px;
 }
 
@@ -271,7 +278,6 @@ th {
     border-radius: 2px;
     height: 52px;
     z-index: 9999;
-    padding-bottom: 22px;
 }
 
 
@@ -337,4 +343,9 @@ div.year {
 }
 .pagination>.page-item>.page-link {
     height: 50px;
+    line-height: 32px;
+}
+.container{
+    padding-right: 0px;
+    padding-left: 0px;
 }
