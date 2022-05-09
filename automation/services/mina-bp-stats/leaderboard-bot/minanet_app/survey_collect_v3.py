@@ -507,6 +507,44 @@ def get_relation_list(df):
             relation_list.append((parent, child))
     return relation_list
 
+def update_scoreboard(conn, score_till_time):
+    sql = """with vars  (snapshot_date, start_date) as( values (%s AT TIME ZONE 'UTC', 
+			(%s - interval '%s' day) AT TIME ZONE 'UTC')
+	)
+	, epochs as(
+		select extract('epoch' from snapshot_date) as end_epoch,
+		extract('epoch' from start_date) as start_epoch from vars
+	)
+	, b_logs as(
+		select (count(1) ) as surveys
+		from bot_logs b , epochs e
+		where b.batch_start_epoch between start_epoch and end_epoch
+	)
+	, scores as (
+		select p.node_id, count(p.bot_log_id) bp_points
+		from points_summary p join bot_logs b on p.bot_log_id =b.id, epochs
+		where b.batch_end_epoch between start_epoch and end_epoch
+		group by 1
+	)
+	, final_scores as (
+	select node_id, bp_points, 
+		surveys, trunc( ((bp_points::decimal*100) / surveys),2) as score_perc
+	from scores l join nodes n on l.node_id=n.id, b_logs t
+	)
+	update nodes nrt set score = s.bp_points, score_percent=s.score_perc  
+	from final_scores s where nrt.id=s.node_id """
+    try:
+        cursor = conn.cursor()
+        cursor.execute(sql, (score_till_time, score_till_time, BaseConfig.UPTIME_DAYS_FOR_SCORE,))
+    
+    except (Exception, psycopg2.DatabaseError) as error:
+        logger.error(ERROR.format(error))
+        cursor.close()
+        return -1
+    finally:
+        cursor.close()
+    return 0
+
 
 def main():
     #update_email_discord_status(connection)
@@ -660,7 +698,13 @@ def main():
             cur_batch_end = prev_batch_end + timedelta(minutes=BaseConfig.SURVEY_INTERVAL_MINUTES)
             if prev_batch_end >= cur_timestamp:
                 do_process = False
-
+    try:
+        update_scoreboard(connection, prev_batch_end)
+    except Exception as error:
+        connection.rollback()
+        logger.error(ERROR.format(error))
+    finally:
+        connection.commit()
 
 if __name__ == '__main__':
     main()
