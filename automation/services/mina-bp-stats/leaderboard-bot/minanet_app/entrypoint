@@ -1,6 +1,8 @@
 #!/bin/sh
 
 ## Do whatever you need with env vars here ...
+printenv | grep -v "no_proxy" >> /etc/default/locale
+
 service cron start
 atd
 
