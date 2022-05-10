@@ -362,9 +362,10 @@
     }
     .bottom-plate-tab {
         display: block!important;
+        width: 1130px!important;
     }
     .left-box, .right-box {
-        width: 550px!important;
+        width: 565px!important;
     }
     .wrap {
         margin: 21vh auto 180vh ;
