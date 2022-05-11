@@ -323,24 +323,18 @@ def get_batch_timings(conn):
     return prev_batch_end, cur_batch_end, bot_log_id
 
 
-def filter_state_hash_percentile(df, p=90):
+def filter_state_hash_percentage(df, p=0.34):
     state_hash_list = df['state_hash'].value_counts().sort_values(ascending=False).index.to_list()
-
-    unique_blk = list()
-    for state_hash in state_hash_list:
-        blk_count = df[df['state_hash'] == state_hash]['block_producer_key'].nunique()
-        unique_blk.append(blk_count)
-
-    percentile_result = round(np.percentile(unique_blk, p))
+    # get 34% number of blk in given batch
+    total_unique_blk = df['block_producer_key'].nunique()
+    percentage_result = round(total_unique_blk * p, 2)
     good_state_hash_list = list()
-    get_map = dict()
     for s in state_hash_list:
         blk_count = df[df['state_hash'] == s]['block_producer_key'].nunique()
-        if blk_count >= percentile_result:
+        # check blk_count for state_hash submitted by blk least 34%
+        if blk_count >= percentage_result:
             good_state_hash_list.append(s)
-            parent_node = df[df['state_hash'] == s]['parent_state_hash'].values[0]
-            get_map[parent_node] = s
-    return good_state_hash_list, get_map
+    return good_state_hash_list
 
 
 def create_graph(batch_df, p_selected_node_df, c_selected_node, p_map):
@@ -633,7 +627,7 @@ def main():
                     master_df = master_df.rename(
                         columns={'file_updated': 'file_timestamps', 'submitter': 'block_producer_key'})
 
-                    c_selected_node, c_map = filter_state_hash_percentile(master_df)
+                    c_selected_node = filter_state_hash_percentage(master_df)
                     batch_graph = create_graph(master_df, p_selected_node_df, c_selected_node, p_map)
                     weighted_graph, g_pos = apply_weights(batch_graph=batch_graph, c_selected_node=c_selected_node,
                                                           p_selected_node=p_selected_node_df)
