@@ -77,6 +77,7 @@ def processing_batch_files(batch_list, max_threads=BaseConfig.MAX_VERIFIER_INSTA
     # combining the results of each batch and generating the dataframe
     flat_list = [item for sublist in master_list for item in sublist]
     df = pd.DataFrame(flat_list)
-
-    return df, max_threads
+    # remove NaN values from list, so that it does not cause SQL error later on
+    df1 = df.where(pd.notnull(df), None)
+    return df1, max_threads
 
