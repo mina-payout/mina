@@ -13,22 +13,28 @@ from flasgger import Swagger
 from flasgger import swag_from
 
 # create database connections
-connection_sd = psycopg2.connect(
-    host=BaseConfig.SIDECAR_HOST,
-    port=BaseConfig.SIDECAR_PORT,
-    database=BaseConfig.SIDECAR_DB,
-    user=BaseConfig.SIDECAR_USER,
-    password=BaseConfig.SIDECAR_PASSWORD
-)
-connection_snark = psycopg2.connect(
-    host=BaseConfig.SNARK_HOST,
-    port=BaseConfig.SNARK_PORT,
-    database=BaseConfig.SNARK_DB,
-    user=BaseConfig.SNARK_USER,
-    password=BaseConfig.SNARK_PASSWORD
-)
 
 ERROR = 'Error: {0}'
+
+def get_snark_conn():
+    connection_snark = psycopg2.connect(
+        host=BaseConfig.SNARK_HOST,
+        port=BaseConfig.SNARK_PORT,
+        database=BaseConfig.SNARK_DB,
+        user=BaseConfig.SNARK_USER,
+        password=BaseConfig.SNARK_PASSWORD
+    )
+    return connection_snark
+
+def get_sidecar_conn():
+    connection_sd = psycopg2.connect(
+        host=BaseConfig.SIDECAR_HOST,
+        port=BaseConfig.SIDECAR_PORT,
+        database=BaseConfig.SIDECAR_DB,
+        user=BaseConfig.SIDECAR_USER,
+        password=BaseConfig.SIDECAR_PASSWORD
+    )
+    return connection_sd
 
 config = {
     "DEBUG": True,  # some Flask specific configs
@@ -45,7 +51,7 @@ swagger = Swagger(app)
 
 #  get data from table
 @cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
-def get_json_data_current(conn=connection_snark):
+def get_json_data_current(conn=get_snark_conn()):
     query = """SELECT block_producer_key , score ,score_percent FROM nodes WHERE application_status = true and score 
     is not null ORDER BY score DESC """
     try:
@@ -59,11 +65,12 @@ def get_json_data_current(conn=connection_snark):
         return -1
     finally:
         cursor.close()
+        conn.close()
     return result
 
 #  get score at specific time
 @cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
-def get_json_data(conn=connection_snark, score_at=None):
+def get_json_data(conn=get_snark_conn(), score_at=None):
     if 'current'==score_at:
         return get_json_data_current(conn)
     
@@ -97,9 +104,11 @@ def get_json_data(conn=connection_snark, score_at=None):
     except (Exception, psycopg2.DatabaseError) as error:
         logger.info(ERROR.format(error))
         cursor.close()
+        conn.close()
         return -1
     finally:
         cursor.close()
+        conn.close()
     return result
 
 
@@ -116,9 +125,9 @@ def get_score(dataType='snarkwork', scoreAt='current'):
     data = None
     logger.info('dt: {0}, time:{1}'.format(dataType, scoreAt))
     if 'snarkwork' == dataType:
-        data = get_json_data(connection_snark, scoreAt)
+        data = get_json_data(get_snark_conn(), scoreAt)
     elif 'sidecar' == dataType:
-        data = get_json_data(connection_sd, scoreAt)
+        data = get_json_data(get_sidecar_conn(), scoreAt)
     
     return jsonify(data)
 
