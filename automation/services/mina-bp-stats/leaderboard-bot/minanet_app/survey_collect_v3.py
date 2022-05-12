@@ -527,10 +527,13 @@ def update_scoreboard(conn, score_till_time):
 	)
 	update nodes nrt set score = s.bp_points, score_percent=s.score_perc  
 	from final_scores s where nrt.id=s.node_id """
+
+    history_sql="""insert into score_history (node_id, score_at, score, score_percent)
+        SELECT id as node_id, %s, score, score_percent from nodes where score is not null """
     try:
         cursor = conn.cursor()
         cursor.execute(sql, (score_till_time, score_till_time, BaseConfig.UPTIME_DAYS_FOR_SCORE,))
-    
+        cursor.execute(history_sql, (score_till_time,))
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
         cursor.close()
@@ -688,17 +691,18 @@ def main():
                 else:
                     logger.info('Finished processing data from table.')
 
+            try:
+                update_scoreboard(connection, cur_batch_end)
+            except Exception as error:
+                connection.rollback()
+                logger.error(ERROR.format(error))
+            finally:
+                connection.commit()
+
             prev_batch_end = cur_batch_end
             cur_batch_end = prev_batch_end + timedelta(minutes=BaseConfig.SURVEY_INTERVAL_MINUTES)
             if prev_batch_end >= cur_timestamp:
                 do_process = False
-    try:
-        update_scoreboard(connection, prev_batch_end)
-    except Exception as error:
-        connection.rollback()
-        logger.error(ERROR.format(error))
-    finally:
-        connection.commit()
 
 if __name__ == '__main__':
     main()
