@@ -323,7 +323,7 @@ def get_batch_timings(conn):
     return prev_batch_end, cur_batch_end, bot_log_id
 
 
-def filter_state_hash_percentage(df, p=0.34):
+def filter_state_hash_percentage(df, p=BaseConfig.PERCENT_PARAM):
     state_hash_list = df['state_hash'].value_counts().sort_values(ascending=False).index.to_list()
     # get 34% number of blk in given batch
     total_unique_blk = df['block_producer_key'].nunique()
