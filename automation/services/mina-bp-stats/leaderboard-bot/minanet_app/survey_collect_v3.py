@@ -201,7 +201,7 @@ def download_uptime_files(start_offset, script_start_time, twenty_min_add, delim
     cnt = 1
     for blob in blobs:
         file_timestamp = blob.name.split('/')[2].rsplit('-', 1)[0]
-        file_epoch = tm.mktime(datetime.strptime(file_timestamp, "%Y-%m-%dT%H:%M:%SZ").timetuple())
+        file_epoch = calendar.timegm(tm.strptime(file_timestamp,  "%Y-%m-%dT%H:%M:%SZ"))
         cnt = cnt + 1
         if file_epoch < twenty_min_add.timestamp() and (file_epoch > script_start_time.timestamp()):
             json_file_name = blob.name.split('/')[2]
