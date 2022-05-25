@@ -143,7 +143,7 @@ def get_score(dataType='snarkwork', scoreAt='current'):
     elif 'sidecar' == dataType:
         data = get_json_data(get_sidecar_conn(), scoreAt)
 
-    elif dataType != 'snarkwork' or dataType != 'sidercar':
+    elif dataType not in ['snarkwork', 'sidecar']:
         response = {
             "error": 'Entered Incorrect Url',
             "error_message": "Please make sure you entered correct URL"
