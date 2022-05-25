@@ -16,6 +16,7 @@ from flasgger import swag_from
 
 ERROR = 'Error: {0}'
 
+
 def get_snark_conn():
     connection_snark = psycopg2.connect(
         host=BaseConfig.SNARK_HOST,
@@ -26,6 +27,7 @@ def get_snark_conn():
     )
     return connection_snark
 
+
 def get_sidecar_conn():
     connection_sd = psycopg2.connect(
         host=BaseConfig.SIDECAR_HOST,
@@ -35,6 +37,7 @@ def get_sidecar_conn():
         password=BaseConfig.SIDECAR_PASSWORD
     )
     return connection_sd
+
 
 config = {
     "DEBUG": True,  # some Flask specific configs
@@ -57,7 +60,8 @@ def get_json_data_current(conn=get_snark_conn()):
     try:
         cursor = conn.cursor()
         cursor.execute(query)
-        result = [dict((cursor.description[i][0], str(value)) for i, value in enumerate(row)) for row in cursor.fetchall()]
+        result = [dict((cursor.description[i][0], str(value)) for i, value in enumerate(row)) for row in
+                  cursor.fetchall()]
         logger.info("fetch data for flask app...")
     except (Exception, psycopg2.DatabaseError) as error:
         logger.info(ERROR.format(error))
@@ -68,12 +72,13 @@ def get_json_data_current(conn=get_snark_conn()):
         conn.close()
     return result
 
+
 #  get score at specific time
 @cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_json_data(conn=get_snark_conn(), score_at=None):
-    if 'current'==score_at:
+    if 'current' == score_at:
         return get_json_data_current(conn)
-    
+
     score_time = datetime.strptime(score_at, '%Y-%m-%dT%H:%M:%SZ')
     query = """with vars  (end_date, start_date) as( values (%s::timestamp , 
 			(%s::timestamp)- interval '60' day )
@@ -100,7 +105,8 @@ def get_json_data(conn=get_snark_conn(), score_at=None):
     try:
         cursor = conn.cursor()
         cursor.execute(query, (score_time, score_time))
-        result = [dict((cursor.description[i][0], str(value)) for i, value in enumerate(row)) for row in cursor.fetchall()]
+        result = [dict((cursor.description[i][0], str(value)) for i, value in enumerate(row)) for row in
+                  cursor.fetchall()]
     except (Exception, psycopg2.DatabaseError) as error:
         logger.info(ERROR.format(error))
         cursor.close()
@@ -112,25 +118,57 @@ def get_json_data(conn=get_snark_conn(), score_at=None):
     return result
 
 
-
-
-#path params 1
+# path params 1
 @app.route('/uptimeScore/', endpoint='without_data_type_score_at')
-@app.route('/uptimeScore/<path:dataType>', endpoint='without_score_at')
-@app.route('/uptimeScore/<path:dataType>/<path:scoreAt>', endpoint='all')
+@app.route('/uptimeScore/<path:dataType>/', endpoint='without_score_at')
+@app.route('/uptimeScore/<path:dataType>/<path:scoreAt>/', endpoint='all')
 @swag_from('api_spec_without_data_type_score_at.yml', endpoint='without_data_type_score_at')
 @swag_from('api_spec_without_score_at.yml', endpoint='without_score_at')
 @swag_from('api_spec.yml', endpoint='all')
 def get_score(dataType='snarkwork', scoreAt='current'):
+    if scoreAt != 'current':
+        try:
+            datetime.strptime(scoreAt, '%Y-%m-%dT%H:%M:%SZ')
+        except Exception as e:
+            response = {
+                "error": 'Entered Incorrect Date',
+                "error_message": "Please make sure you entered valid date in format:2022-04-30T08:30:00Z"
+            }
+            return jsonify(response)
+
     data = None
     logger.info('dt: {0}, time:{1}'.format(dataType, scoreAt))
     if 'snarkwork' == dataType:
         data = get_json_data(get_snark_conn(), scoreAt)
     elif 'sidecar' == dataType:
         data = get_json_data(get_sidecar_conn(), scoreAt)
-    
+
+    elif dataType != 'snarkwork' or dataType != 'sidercar':
+        response = {
+            "error": 'Entered Incorrect Url',
+            "error_message": "Please make sure you entered correct URL"
+        }
+        return jsonify(response), 403
+
     return jsonify(data)
 
+
+@app.errorhandler(404)
+def handle_exception(e):
+    response = {
+        "error": 'Entered Incorrect Url',
+        "error_message": "Please make sure you entered correct URL"
+    }
+    return jsonify(response), 404
+
+
+@app.errorhandler(500)
+def handle_exception(e):
+    response = {
+        "error": 'Internal Server Error',
+        "error_message": "Something went wrong we are working on it."
+    }
+    return jsonify(response), 500
 
 
 if __name__ == '__main__':
