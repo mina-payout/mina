@@ -131,8 +131,8 @@ def get_score(dataType='snarkwork', scoreAt='current'):
             datetime.strptime(scoreAt, '%Y-%m-%dT%H:%M:%SZ')
         except Exception as e:
             response = {
-                "error": 'Entered Incorrect Date',
-                "error_message": "Please make sure you entered valid date in format:2022-04-30T08:30:00Z"
+                "Error": 'Invalid Date Format',
+                "Error_message": "Please make sure you use Valid Date in Format:2022-04-30T08:30:00Z"
             }
             return jsonify(response)
 
@@ -145,8 +145,8 @@ def get_score(dataType='snarkwork', scoreAt='current'):
 
     elif dataType not in ['snarkwork', 'sidecar']:
         response = {
-            "error": 'Entered Incorrect Url',
-            "error_message": "Please make sure you entered correct URL"
+            "Error": 'Invalid URL',
+            "Error_message": "Please make sure you use Correct URL"
         }
         return jsonify(response), 403
 
@@ -156,8 +156,8 @@ def get_score(dataType='snarkwork', scoreAt='current'):
 @app.errorhandler(404)
 def handle_exception(e):
     response = {
-        "error": 'Entered Incorrect Url',
-        "error_message": "Please make sure you entered correct URL"
+        "Error": 'Page Not Found',
+        "Error_message": "Please make sure you use Correct URL"
     }
     return jsonify(response), 404
 
