@@ -1,11 +1,11 @@
-Endpoint returning a list of block producers and their respective score in decending order for given data type and at given time.
----
-openapi: 3.0.1
-info:
-  title: Uptime data API
-servers:
-- url: http://127.0.0.1:5001/
+tags:
+  - uptimescore
 parameters:
+  - name: pubkey
+    in: path
+    type: string
+    description: Block producer public key. Starts with B62 and 55 characters long.
+    required: false
   - name: dataType
     in: path
     type: string

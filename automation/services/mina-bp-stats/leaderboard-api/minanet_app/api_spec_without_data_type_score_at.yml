@@ -1,10 +1,5 @@
-Endpoint returning a list of block producers and their respective score in decending order for snarkwork data at current time.
----
-openapi: 3.0.1
-info:
-  title: Uptime data API
-servers:
-- url: http://127.0.0.1:5001/
+tags:
+  - uptimescore
 responses:
   200:
     description: A list of block producers and their respective score in decending order for snarkwork data at current time
