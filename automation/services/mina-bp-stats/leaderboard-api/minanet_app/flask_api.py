@@ -64,7 +64,7 @@ template = {
     "termsOfService": "https://minaprotocol.com/tos",
     "version": "1.0.1"
   },
-  "host": BaseConfig.API_HOST+":"+str(BaseConfig.API_PORT),  # overrides localhost:500
+  "host": BaseConfig.SWAGGER_HOST,  # overrides localhost:500
   "basePath": "/uptimescore",  # base bash for blueprint registration
   "schemes": [
     "http",
