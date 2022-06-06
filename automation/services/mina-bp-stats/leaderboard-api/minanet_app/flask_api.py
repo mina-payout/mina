@@ -64,7 +64,7 @@ template = {
     "termsOfService": "https://minaprotocol.com/tos",
     "version": "1.0.1"
   },
-  "host": "localhost:5001",  # overrides localhost:500
+  "host": BaseConfig.API_HOST+":"+str(BaseConfig.API_PORT),  # overrides localhost:500
   "basePath": "/uptimescore",  # base bash for blueprint registration
   "schemes": [
     "http",
@@ -81,7 +81,6 @@ cache = Cache(app)
 swagger = Swagger(app, template=template)
 
 # 1
-@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_current_snark_data_for_all():
     conn=get_snark_conn()
     query = """SELECT block_producer_key , score ,score_percent FROM nodes WHERE application_status = true and score 
@@ -100,13 +99,12 @@ def get_current_snark_data_for_all():
         conn.close()
     return result
 # 2
-@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_current_snark_data_for_one(filter_pub_key):
     conn=get_snark_conn()
     query = """select n.block_producer_key , sh.score , sh.score_percent 
         from score_history sh join nodes n on n.id =sh.node_id 
         where n.block_producer_key = %s
-        order by score_at limit 1	; """
+        order by score_at desc limit 1	; """
     try:
         cursor = conn.cursor()
         cursor.execute(query, (filter_pub_key,))
@@ -121,7 +119,6 @@ def get_current_snark_data_for_one(filter_pub_key):
         conn.close()
     return result
 # 3
-@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_historic_snark_data_for_all(score_at):
     conn=get_snark_conn()
     query = """with recent_time as(
@@ -147,7 +144,6 @@ def get_historic_snark_data_for_all(score_at):
     return result
 
 # 4
-@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_historic_snark_data_for_one(score_at, filter_pub_key):
     conn=get_snark_conn()
     query = """with recent_time as(
@@ -176,9 +172,8 @@ def get_historic_snark_data_for_one(score_at, filter_pub_key):
 
 
 # 5
-@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_current_sidecar_data_for_all():
-    conn=get_snark_conn()
+    conn=get_sidecar_conn()
     query = """SELECT block_producer_key , score ,score_percent FROM nodes WHERE application_status = true and score 
     is not null ORDER BY score DESC; """
     try:
@@ -196,9 +191,8 @@ def get_current_sidecar_data_for_all():
     return result
 
 # 6
-@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_current_sidecar_data_for_one( filter_pub_key):
-    conn=get_snark_conn()
+    conn=get_sidecar_conn()
     query = """SELECT block_producer_key , score ,score_percent FROM nodes 
         WHERE block_producer_key= %s and application_status = true and score is not null ORDER BY score DESC; """
     try:
@@ -216,7 +210,6 @@ def get_current_sidecar_data_for_one( filter_pub_key):
     return result
 
 # 7
-@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_historic_sidecar_data_for_all(score_time):
     conn=get_sidecar_conn()
     query = """with vars  (end_date, start_date) as( values (%s::timestamp , 
@@ -257,7 +250,6 @@ def get_historic_sidecar_data_for_all(score_time):
     return result
 
 # 8
-@cache.memoize(timeout=BaseConfig.CACHE_TIMEOUT)
 def get_historic_sidecar_data_for_one(score_time, filter_pub_key):
     conn=get_sidecar_conn()
     query = """with vars  (end_date, start_date) as( values (%s::timestamp , 
@@ -286,9 +278,10 @@ def get_historic_sidecar_data_for_one(score_time, filter_pub_key):
  
     try:
         cursor = conn.cursor()
-        cursor.execute(query, (filter_pub_key, score_time, score_time))
+        cursor.execute(query, (score_time, score_time, filter_pub_key))
         result = [dict((cursor.description[i][0], str(value)) for i, value in enumerate(row)) for row in
                   cursor.fetchall()]
+        print(result)
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
         cursor.close()
