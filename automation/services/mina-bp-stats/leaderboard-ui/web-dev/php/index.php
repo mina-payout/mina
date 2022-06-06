@@ -25,7 +25,7 @@
       <div class="container">
          <!-- Logo And Header Section Start -->
          <div class="row mb-3 minalogo">
-            <img src="assets/images/MinaWordmark.png" alt="Mina" class="mina-main-logo d-block mx-auto mx-md-0">
+            <img src="assets/images/Mina_Wordmark.svg" alt="Mina" height="70px" width="150px" class="mina-main-logo d-block mx-auto mx-md-0">
          </div>
          <div class="row mb-5 mina-subheader-text">
             <div class="subheader">
@@ -37,7 +37,7 @@
          <div class="row mb-3">
             <div class="uptime-lederboard-topButton"></div>
             <div class="col-12 col-md-6 mx-0 px-0 topButton">
-               <button type="button" class="delegationButton btn btn-dark btn-primary" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSduM5EIpwZtf5ohkVepKzs3q0v0--FDEaDfbP2VD4V6GcBepA/viewform')">APPLY FOR DELEGATION <i class="bi bi-arrow-right "></i>
+               <button type="button" class="delegationButton nav-link active" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSduM5EIpwZtf5ohkVepKzs3q0v0--FDEaDfbP2VD4V6GcBepA/viewform')">APPLY FOR DELEGATION <i class="bi bi-arrow-right "></i>
                </button>
                <div class="bottomPlate for-normal" id="leaderBoardbtn">
                </div>
@@ -45,15 +45,15 @@
             <div class="col-12 col-md-6 mx-0 px-0 Link-responcive">
                <div class="d-flex flex-row-reverse mb-2">
                   <div class="flex-column d-none d-sm-block">
-                     <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://forums.minaprotocol.com/t/delegation-program-faq/4246" target="_blank">FAQ</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
-                     <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://minaprotocol.com/blog/mina-foundation-delegation-policy" target="_blank">Mina Foundation Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                     <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en" target="_blank">Foundation Delegation Program</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                     <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en/advanced/foundation-delegation-program" target="_blank">Delegation Program Participation Guidelines</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
                   </div>
                </div>
                <!-- for mobile view -->
                <div class="d-flex flex-row">
                   <div class="d-flex d-sm-none">
-                     <div class="p-1"><a class="Mina-Refrance-color alignment-link" href="https://forums.minaprotocol.com/t/delegation-program-faq/4246" target="_blank">FAQ</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
-                     <div class="p-1"><a class="Mina-Refrance-color alignment-link" href="https://minaprotocol.com/blog/mina-foundation-delegation-policy" target="_blank">Mina Foundation Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                     <div class="p-1"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en" target="_blank">Foundation Delegation Program</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                     <div class="p-1"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en/advanced/foundation-delegation-program" target="_blank">Delegation Program Participation Guidelines</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
                   </div>
                </div>
                <!-- <div class="row Link-responcive"> -->
@@ -81,16 +81,16 @@
                      <div class="row Mobile-Tab-view">
                         <ul class="nav nav-pills text-uppercase text-center">
                            <li class="nav-item left-box">
-                              <a data-toggle="pill" class="nav-link active " href="#Data-table" aria-controls="Data-table" aria-selected="true" id="table-one" onclick='showDataForTabOne (10, 1, 0)'>
+                              <a data-toggle="pill" class="nav-link active " href="#Data-table" aria-controls="Data-table" aria-selected="true" id="table-one" onclick='showDataForTabTwo (10, 1, 0)'>
                                  <div class="beta-text">
-                                    SIDECAR UPTIME SYSTEM (Current)
+                                    SNARK-WORK UPTIME SYSTEM (Beta)
                                  </div>
                               </a>
                            </li>
                            <li class="nav-item right-box">
-                              <a data-toggle="pill" class="nav-link" href="#Data-table-2" aria-controls="Data-table-2" aria-selected="false" id="table-two" onclick='showDataForTabTwo (10, 1, 0)'>
+                              <a data-toggle="pill" class="nav-link" href="#Data-table-2" aria-controls="Data-table-2" aria-selected="false" id="table-two" onclick='showDataForTabOne (10, 1, 0)'>
                                  <div class="beta-text">
-                                    SNARK-WORK UPTIME SYSTEM (Beta)
+                                   SIDECAR UPTIME SYSTEM (Current)
                                  </div>
                               </a>
                            </li>
@@ -132,7 +132,7 @@
                        tabledata = response;
                        $("ul li a").each(function () {
                           if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
-                              showDataForTabOne (10, 1, 0);
+                              showDataForTabTwo (10, 1, 0);
                   }
                   // else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
                   //             alert("hello tab 2");
@@ -162,7 +162,7 @@
                   tabledataSnark = response;
                    $("ul li a").each(function () {
                        if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
-                          showDataForTabTwo (10, 1, 0);
+                          showDataForTabOne (10, 1, 0);
               }
           });
                   $('#loaderSpin').html('');
@@ -223,7 +223,7 @@
           console.log("$(document).ready");
               getRecords(10, 1);
               getRecordsForSnark(10, 1);
-              $('.Snark-work-Uptime-text').hide();
+            $('.Sidecar-Uptime-text').hide();
 
               $('input[type=search]').on('search', function () {
                   if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
