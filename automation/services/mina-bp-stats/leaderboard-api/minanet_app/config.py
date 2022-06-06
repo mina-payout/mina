@@ -3,6 +3,8 @@ import datetime
 import os
 
 class BaseConfig(object):
+
+
     DEBUG = False
     LOGGING_LEVEL = logging.INFO
     LOGGING_LOCATION = str(os.environ['LOGGING_LOCATION']).strip()
@@ -21,4 +23,5 @@ class BaseConfig(object):
 
     API_HOST = str(os.environ['API_HOST']).strip()
     API_PORT = int(os.environ['API_PORT'])
+    SWAGGER_HOST = str(os.environ['SWAGGER_HOST']).strip()
     CACHE_TIMEOUT = int(os.environ['CACHE_TIMEOUT'])

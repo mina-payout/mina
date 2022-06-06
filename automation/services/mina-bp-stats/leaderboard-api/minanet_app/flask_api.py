@@ -407,4 +407,4 @@ def handle_exception(e):
 
 
 if __name__ == '__main__':
-    app.run(host=BaseConfig.API_HOST, port=BaseConfig.API_PORT, debug=True)
+    app.run(host=BaseConfig.API_HOST, port=BaseConfig.API_PORT, debug=BaseConfig.DEBUG)
