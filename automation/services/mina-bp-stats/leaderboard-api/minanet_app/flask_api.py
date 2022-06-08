@@ -128,7 +128,8 @@ def get_historic_snark_data_for_all(score_at):
                 order by sh.score_at desc limit 1
             )
             select n.block_producer_key , sh.score , sh.score_percent 
-            from recent_time r join score_history sh on r.score_at=sh.score_at ; """
+            from recent_time r join score_history sh on r.score_at=sh.score_at 
+            join nodes n on n.id =sh.node_id order by sh.score DESC ; """
     try:
         cursor = conn.cursor()
         cursor.execute(query, (score_at,))
@@ -230,7 +231,7 @@ def get_historic_sidecar_data_for_all(score_time):
 		where b.file_timestamps between start_date and end_date
 		group by 1
 	)
-	select n.block_producer_key , bp_points, surveys, 
+	select n.block_producer_key , bp_points as score,  
 		trunc( ((bp_points::decimal*100) / surveys),2) as score_percent
 	from scores l join nodes n on l.node_id=n.id, b_logs t
 	order by 2 desc	; """
@@ -271,7 +272,7 @@ def get_historic_sidecar_data_for_one(score_time, filter_pub_key):
 		where n.block_producer_key= %s and b.file_timestamps between start_date and end_date
 		group by 1
 	)
-	select n.block_producer_key , bp_points, surveys, 
+	select n.block_producer_key , bp_points as score, 
 		trunc( ((bp_points::decimal*100) / surveys),2) as score_percent
 	from scores l join nodes n on l.node_id=n.id, b_logs t
 	order by 2 desc	; """
@@ -306,10 +307,26 @@ def get_score(pubkey='',dataType='snarkwork', scoreAt='current'):
     pubkey = pubkey.replace("/","")
     dataType = dataType.replace("/","")
     scoreAt = scoreAt.replace("/","")
-    
-    print('dt: {0}, time:{1}, pubkey:{2}'.format(dataType, scoreAt, pubkey))
-    logger.info('dt: {0}, time:{1}'.format(dataType, scoreAt))
+
+    logger.info('dt: {0}, time:{1}, pubkey:{2}'.format(dataType, scoreAt, pubkey))
     score_time = None
+    filter_pub_key = None
+
+    if pubkey.startswith('B62') and len(pubkey) == 55:
+        filter_pub_key = pubkey
+
+    elif pubkey in ['snarkwork', 'sidecar']:
+        if dataType not in ['snarkwork', 'sidecar']:
+            scoreAt = dataType
+        dataType = pubkey
+
+    elif len(pubkey) > 0:
+        response = {
+            "Error": 'Invalid public key',
+            "Error_message": "Please provide correct public key"
+        }
+        return jsonify(response), 404
+
     if scoreAt != 'current':
         try:
             datetime.strptime(scoreAt, '%Y-%m-%dT%H:%M:%SZ')
@@ -321,52 +338,39 @@ def get_score(pubkey='',dataType='snarkwork', scoreAt='current'):
             }
             return jsonify(response), 404
 
-    filter_pub_key= None
-
-    if pubkey.startswith('B62') and len(pubkey)==55:
-        filter_pub_key = pubkey
-    elif pubkey in ['snarkwork', 'sidecar']:
-        dataType=pubkey
-    elif len(pubkey)>0:
-        response = {
-            "Error": 'Invalid public key',
-            "Error_message": "Please provide correct public key"
-        }
-        return jsonify(response), 404
-  
     if dataType not in ['snarkwork', 'sidecar']:
         response = {
             "Error": 'Invalid datatype',
             "Error_message": "Please provide datatype as snarkwork or sidecar"
         }
         return jsonify(response), 404
+
     data = None
     try:
         if 'snarkwork' == dataType and score_time is None and filter_pub_key is None:
-            print(get_current_snark_data_for_all)
             data = get_current_snark_data_for_all()
+
         elif 'snarkwork' == dataType and score_time is None and filter_pub_key is not None:
-            print(get_current_snark_data_for_one)
             data = get_current_snark_data_for_one(filter_pub_key)
+
         elif 'snarkwork' == dataType and score_time is not None and filter_pub_key is None:
-            print(get_historic_snark_data_for_all)
             data = get_historic_snark_data_for_all(score_time)
+
         elif 'snarkwork' == dataType and score_time is not None and filter_pub_key is not None:
-            print(get_historic_snark_data_for_one)
             data = get_historic_snark_data_for_one(score_time, filter_pub_key)
 
         elif 'sidecar' == dataType and score_time is None and filter_pub_key is None:
-            print(get_current_sidecar_data_for_all)
             data = get_current_sidecar_data_for_all()
+
         elif 'sidecar' == dataType and score_time is None and filter_pub_key is not None:
-            print(get_current_sidecar_data_for_one)
             data = get_current_sidecar_data_for_one(filter_pub_key)
+
         elif 'sidecar' == dataType and score_time is not None and filter_pub_key is None:
-            print(get_historic_sidecar_data_for_all)
             data = get_historic_sidecar_data_for_all(score_time)
+
         elif 'sidecar' == dataType and score_time is not None and filter_pub_key is not None:
-            print(get_historic_sidecar_data_for_one)
             data = get_historic_sidecar_data_for_one(score_time, filter_pub_key)
+
         else:
             response = {
                 "Error": 'Something went wrong',
