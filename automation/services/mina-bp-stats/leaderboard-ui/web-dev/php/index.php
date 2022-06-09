@@ -45,8 +45,8 @@
             <div class="col-12 col-md-6 mx-0 px-0 Link-responcive">
                <div class="d-flex flex-row-reverse mb-2">
                   <div class="flex-column d-none d-sm-block">
-                     <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en" target="_blank">Foundation Delegation Program</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
                      <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en/advanced/foundation-delegation-program" target="_blank">Delegation Program Participation Guidelines</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                     <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en" target="_blank">Mina Foundation Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
                   </div>
                </div>
                <!-- for mobile view -->
@@ -81,14 +81,14 @@
                      <div class="row Mobile-Tab-view">
                         <ul class="nav nav-pills text-uppercase text-center">
                            <li class="nav-item left-box">
-                              <a data-toggle="pill" class="nav-link active " href="#Data-table" aria-controls="Data-table" aria-selected="true" id="table-one" onclick='showDataForTabTwo (10, 1, 0)'>
+                              <a data-toggle="pill" class="nav-link active " href="#Data-table" aria-controls="Data-table" aria-selected="true" id="table-one" onclick='showDataForTabOne (10, 1, 0)'>
                                  <div class="beta-text">
                                     SNARK-WORK UPTIME SYSTEM (Beta)
                                  </div>
                               </a>
                            </li>
                            <li class="nav-item right-box">
-                              <a data-toggle="pill" class="nav-link" href="#Data-table-2" aria-controls="Data-table-2" aria-selected="false" id="table-two" onclick='showDataForTabOne (10, 1, 0)'>
+                              <a data-toggle="pill" class="nav-link" href="#Data-table-2" aria-controls="Data-table-2" aria-selected="false" id="table-two" onclick='showDataForTabTwo (10, 1, 0)'>
                                  <div class="beta-text">
                                    SIDECAR UPTIME SYSTEM (Current)
                                  </div>
@@ -100,7 +100,8 @@
                   </div>
                   <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 ">
                      <div class="row">
-                        <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Search Public Key" onkeyup="search_result()">
+                        <label class="search_label">find participant</label>
+                        <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Type To Filter" onkeyup="search_result()">
                      </div>
                   </div>
                </div>
@@ -129,16 +130,14 @@
 
                   },
                   success: function(response) {
-                       tabledata = response;
-                       $("ul li a").each(function () {
-                          if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
-                              showDataForTabTwo (10, 1, 0);
-                  }
-                  // else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
-                  //             alert("hello tab 2");
-                  //             showDataForTabTwo (10, 1, 0);
-                  // }
-              });
+                     tabledata = response;
+                       
+
+              $("ul li a").each(function () {
+                       if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
+                        showDataForTabTwo (10, 1, 0);
+              }
+          });
                       $('#loaderSpin').html('');
                   },
 
@@ -160,11 +159,11 @@
               success: function(response) {
                   // alert(response);
                   tabledataSnark = response;
-                   $("ul li a").each(function () {
-                       if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
-                          showDataForTabOne (10, 1, 0);
-              }
-          });
+                  $("ul li a").each(function () {
+                          if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
+                              showDataForTabOne (10, 1, 0);
+                  }
+              });
                   $('#loaderSpin').html('');
               },
 
@@ -176,15 +175,15 @@
           $.ajax({
               type: "POST",
               url: "showDataForTabOne.php",
-              data: {pageNumber: pageNumber ,pagestart:pagestart, tabledata : tabledata , search_input : input},
+              data: {pageNumber: pageNumber ,pagestart:pagestart, tabledata : tabledataSnark , search_input : input},
 
               cache: false,
               success: function(html) {
                   $('#loaderSpin').html('');
                   $("#result2").html('');
                   $("#result").html(html);
-                  $('.Sidecar-Uptime-text').show();
-                  $('.Snark-work-Uptime-text').hide();
+                  $('.Sidecar-Uptime-text').hide();
+                  $('.Snark-work-Uptime-text').show();
               },
 
           });
@@ -195,26 +194,25 @@
              $.ajax({
                  type: "POST",
                  url: "showDataForTabTwo.php",
-                 data: {pageNumber: pageNumber ,pagestart:pagestart, tabledata : tabledataSnark , search_input : input},
+                 data: {pageNumber: pageNumber ,pagestart:pagestart, tabledata : tabledata , search_input : input},
 
                  cache: false,
                  success: function(html) {
                      $('#loaderSpin').html('');
                      $("#result").html('');
                      $("#result2").html(html);
-                     $('.Sidecar-Uptime-text').hide();
-                     $('.Snark-work-Uptime-text').show();
+                     $('.Sidecar-Uptime-text').show();
+                     $('.Snark-work-Uptime-text').hide();
                  },
              });
          }
          function search_result() {
           let input = document.getElementById('search-input').value
           input=input.toLowerCase();
-          if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
+          if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active')) {
                               showDataForTabOne (10, 1, 0, input);
                   }
-                  else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
-                              alert("hello tab 2");
+                  else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').hasClass('active')) {
                               showDataForTabTwo (10, 1, 0 , input);
                   }
 
@@ -226,12 +224,11 @@
             $('.Sidecar-Uptime-text').hide();
 
               $('input[type=search]').on('search', function () {
-                  if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
-                              showDataForTabOne (10, 1, 0);
+                  if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active')) {
+                     showDataForTabOne (10, 1, 0);
                   }
-                  else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
-                              alert("hello tab 2");
-                              showDataForTabTwo (10, 1, 0);
+                  else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').hasClass('active')) {
+                      showDataForTabTwo (10, 1, 0);
                   }
               });
           });

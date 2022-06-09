@@ -71,7 +71,7 @@ $counter = $lowerLimit + 1;
                         ?>
                         <th scope="col">SCORE</th>
                         <?php }?>
-                        <th scope="col">60 Day Uptime Performance SCORE</th>
+                        <th scope="col">SCORE(90 Day)</th>
                     </tr>
                 </thead>
                 <tbody class="">
@@ -84,7 +84,7 @@ $counter = $lowerLimit + 1;
                     </td>
                 </tr>
                 <?php 
-
+                 
                  if($MaintenanceMode != true){
                 foreach ($row as $key => $data) { 
                    
