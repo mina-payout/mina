@@ -94,8 +94,8 @@
                                  </div>
                               </a>
                            </li>
+                           <div class="bottom-plate-tab"></div>
                         </ul>
-                        <div class="bottom-plate-tab"></div>
                      </div>
                   </div>
                   <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 ">
