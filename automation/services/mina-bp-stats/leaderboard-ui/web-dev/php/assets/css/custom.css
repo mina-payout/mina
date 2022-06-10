@@ -328,11 +328,12 @@ th {
     box-sizing: border-box;
     box-shadow: inset 0px 2px 2px rgba(0, 0, 0, 0.15);
     border-radius: 2px;
-    height: 52px;
+    height: 49px;
     z-index: 9999;
     text-align: center;
     font-size: 20px;
-    font-family: monospace;
+    font-family: "Monument Grotesk, serif";
+    
 }
 
 
@@ -399,6 +400,7 @@ div.year {
 .pagination {
     margin-top: -72px;
     font-family: "Monument Grotesk, serif";
+    margin-right: 20px;
 }
 .pagination>.page-item>.page-link {
     height: 50px;
