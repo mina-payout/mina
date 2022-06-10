@@ -119,10 +119,9 @@ a:hover {
     font-size: 15px;
 }
 .search_label{
-    font-family: Monument Grotesk Mono\, monospace;
-    font-style: normal;
-    font-weight: normal;
-    font-size:18px;
+    font-family:monospace;
+    font-weight: 500;
+    font-size:1.099rem;
     display: block;
     text-transform: uppercase;
     line-height: 1;
@@ -244,6 +243,7 @@ th {
     font-size: 18px;
     line-height: 64px;
     color: #000000;
+    font-family: "Monument Grotesk";
 }
 
 .mina-top-right-button {
@@ -398,6 +398,7 @@ div.year {
 }
 .pagination {
     margin-top: -72px;
+    font-family: "Monument Grotesk, serif";
 }
 .pagination>.page-item>.page-link {
     height: 50px;
@@ -407,6 +408,7 @@ div.year {
 a.page-link {
     color: #FF603B;
     text-align: center;
+    font-family: "Monument Grotesk, serif";
 }
 a.page-link:hover {
     color: #FF603B;
