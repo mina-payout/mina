@@ -54,7 +54,7 @@ $counter = $lowerLimit + 1;
     <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
       <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');">Last</a>
     </li>
-    <li class = "mr-3 mt-3 p-2">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li>
+    <li class = "mr-3 mt-1 p-2">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li>
   </ul>
 </nav>
 </div>
