@@ -1,10 +1,28 @@
-@font-face {
+/* @font-face {
     font-family: Monument Grotesk;
     src: url(MonumentGrotesk-Regular.ttf);
+    
+} */
+@font-face {
+    font-family: Monospace;
+    src: 
+        url('fonts/Monospace.ttf'),
+        url('fonts/MonospaceBold.ttf'),
+        url('fonts/MonospaceOblique.ttf');
+    font-weight: 400;
+    font-style: normal;
 }
-
+@font-face {
+    font-family: 'Monument Grotesk';
+    src: local('Monument Grotesk Regular'), local('Monument-Grotesk-Regular'),
+        url('fonts/MonumentGrotesk-Regular.woff2') format('woff2'),
+        url('fonts/MonumentGrotesk-Regular.woff') format('woff'),
+        url('fonts/MonumentGrotesk-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
 .container {
-    font-family: Monument Grotesk;
+    font-family: "Monument Grotesk";
     font-style: normal;
     font-weight: normal;
     margin-top: 3rem;
@@ -121,7 +139,7 @@ a:hover {
     font-size: 15px;
 }
 .search_label{
-    font-family:monospace;
+    font-family:Monospace;
     font-weight: 530;
     font-size:21px;
     display: block;
@@ -229,7 +247,7 @@ a:hover {
 
 th {
     /* font-family: Monument Grotesk; */
-    font-family: monospace;
+    font-family: Monospace;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     font-style: normal;
