@@ -71,7 +71,7 @@ a:hover {
 .Mina-Refrance-color {
     color: #FF603B;
     font-family: "Monument Grotesk";
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .navbar-font {
@@ -140,8 +140,8 @@ a:hover {
 }
 .search_label{
     font-family:Monospace;
-    font-weight: 530;
-    font-size:21px;
+    font-weight: 400;
+    font-size:19px;
     display: block;
     text-transform: uppercase;
     line-height: 1;
@@ -183,7 +183,7 @@ a:hover {
 }
 .Sidecar-Uptime-text{
     font-family: "Monument Grotesk";  
-    font-size: 20px;
+    font-size: 19px;
     
 }
 .Sidecar-Uptime-text>.p{
@@ -192,7 +192,7 @@ a:hover {
 }
 .Snark-work-Uptime-text{
     font-family: "Monument Grotesk";
-    font-size: 20px;
+    font-size: 19px;
 }
 
 .Snark-work-Uptime-text>.p{
@@ -252,7 +252,7 @@ th {
     text-transform: uppercase;
     font-style: normal;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 18px;
     background-color: #2D2D2D;
     color: white;
     line-height: 16px;

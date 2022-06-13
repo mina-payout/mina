@@ -98,7 +98,7 @@
                         </ul>
                      </div>
                   </div>
-                  <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 ">
+                  <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 mt-3">
                      <div class="row">
                         <label class="search_label">find participant</label>
                         <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Type To Filter" onkeyup="search_result()">
