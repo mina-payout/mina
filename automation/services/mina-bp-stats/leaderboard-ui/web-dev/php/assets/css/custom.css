@@ -183,7 +183,7 @@ a:hover {
 }
 .Sidecar-Uptime-text{
     font-family: "Monument Grotesk";  
-    font-size: 19px;
+    font-size: 20px;
     
 }
 .Sidecar-Uptime-text>.p{
@@ -192,7 +192,7 @@ a:hover {
 }
 .Snark-work-Uptime-text{
     font-family: "Monument Grotesk";
-    font-size: 19px;
+    font-size: 20px;
 }
 
 .Snark-work-Uptime-text>.p{
@@ -420,12 +420,14 @@ div.year {
 .pagination {
     margin-top: -72px;
     font-family: "Monument Grotesk";
-    margin-right: 20px;
+    margin-right: 5px;
+    
 }
 .pagination>.page-item>.page-link {
     height: 50px;
     line-height: 32px;
-    width: 100px;
+    width: 90px;
+
 }
 a.page-link {
     color: #FF603B;

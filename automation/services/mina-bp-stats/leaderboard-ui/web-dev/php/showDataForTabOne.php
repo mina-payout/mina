@@ -52,14 +52,15 @@ $counter = $lowerLimit + 1;
     <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
       <a class="page-link" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');">Last</a>
     </li>
-    <li class = "mr-3 mt-1 p-2">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li>
+    <li class = "mr-3 mt-1 p-2 d-none d-md-block">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li>
   </ul>
 </nav>
 </div>
+<span class="d-block  d-md-none">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></span>
 </div>
 </div>
 
-<div class="container pr-0 pl-0 mt-0 mb-5 tab-content">
+<div class="container pr-0 pl-0 mt-1 mb-5 tab-content">
         <div class="table-responsive table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl tab-pane fade show active" id="Data-table" role="tabpanel" aria-labelledby="Data-table">
             <table class="table table-striped text-center">
                 <thead>
