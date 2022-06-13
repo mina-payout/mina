@@ -69,9 +69,9 @@ $counter = $lowerLimit + 1;
                         <?php 
                         if($ShowScoreColumn == true){
                         ?>
-                        <th scope="col">SCORE</th>
-                        <?php }?>
                         <th scope="col">SCORE(90 Day)</th>
+                        <?php }?>
+                        <th scope="col">SCORE PERCENT</th>
                     </tr>
                 </thead>
                 <tbody class="">
