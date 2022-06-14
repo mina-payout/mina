@@ -38,7 +38,7 @@ $row = array_slice($rowData,$pagestart,$perPageCount);
 $counter = $lowerLimit + 1;
 ?>
 <div class="container mb-0 mt-0 performance-Container">
-<div class="row mx-1 d-flex justify-content-end">
+<div class="row mx-1 d-flex justify-content-start">
 <div class="d-flex flex-row-reverse mb-2 mx-sm-auto mx-lg-0">
 <nav aria-label="Page navigation example" style="<?php if($MaintenanceMode == true) {echo 'display: none;';}?>">
   <ul class="pagination justify-content-center">
@@ -56,11 +56,13 @@ $counter = $lowerLimit + 1;
   </ul>
 </nav>
 </div>
-<span class="d-block  d-md-none">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></span>
+
 </div>
+<span class="d-block d-md-none">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></span>
 </div>
 
-<div class="container pr-0 pl-0 mt-1 mb-5 tab-content">
+
+<div class="container pr-0 pl-0 mt-0 mb-5 tab-content">
         <div class="table-responsive table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl tab-pane fade show active" id="Data-table" role="tabpanel" aria-labelledby="Data-table">
             <table class="table table-striped text-center">
                 <thead>
@@ -70,9 +72,9 @@ $counter = $lowerLimit + 1;
                         <?php 
                         if($ShowScoreColumn == true){
                         ?>
-                        <th scope="col">SCORE(90 Day)</th>
+                        <th scope="col">SCORE(90-Day)</th>
                         <?php }?>
-                        <th scope="col">SCORE PERCENT</th>
+                        <th scope="col">SCORE(%)</th>
                     </tr>
                 </thead>
                 <tbody class="">

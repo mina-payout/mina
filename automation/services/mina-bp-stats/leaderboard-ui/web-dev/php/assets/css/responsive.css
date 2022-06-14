@@ -193,6 +193,7 @@
     }
     .bottom-plate-tab {
         left: 0px;
+        display: none!important;
     }
     .pagination {
         margin-top: 0px!important;
@@ -371,7 +372,7 @@
         margin: 21vh auto 180vh ;
     }
     .pagination {
-        margin-top: -72px!important;
+        margin-top: -155px!important;
     }
     .justify-content-center{
         justify-content: end!important;

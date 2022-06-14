@@ -72,6 +72,7 @@ a:hover {
     color: #FF603B;
     font-family: "Monument Grotesk";
     font-size: 18px;
+    line-height: 28px;
 }
 
 .navbar-font {
@@ -128,6 +129,7 @@ a:hover {
     line-height: 16px;
     letter-spacing: 1px;
     width: 230px;
+    text-align: center;
 }
 .delegationButton.nav-link.active,
 .delegationButton .show>.nav-link {
@@ -182,8 +184,10 @@ a:hover {
     margin: 0px 6px;
 }
 .Sidecar-Uptime-text{
-    font-family: "Monument Grotesk";  
-    font-size: 20px;
+    font-family: Monospace;  
+    font-size: 16px;
+    line-height: 1;
+    color: #000000;
     
 }
 .Sidecar-Uptime-text>.p{
@@ -191,8 +195,10 @@ a:hover {
     
 }
 .Snark-work-Uptime-text{
-    font-family: "Monument Grotesk";
-    font-size: 20px;
+    font-family: Monospace;
+    font-size: 16px;
+    line-height: 1;
+    color: #000000;
 }
 
 .Snark-work-Uptime-text>.p{
@@ -208,7 +214,7 @@ a:hover {
 .subheader>p {
     /* font-size: 24px; */
     font-size: 48px;
-    line-height: 58px;
+    line-height: 57.6px;
     font-family: "Monument Grotesk";
 }
 
@@ -252,7 +258,8 @@ th {
     text-transform: uppercase;
     font-style: normal;
     font-weight: 400;
-    font-size: 18px;
+    font-size: 15px;
+    letter-spacing: 2px;
     background-color: #2D2D2D;
     color: white;
     line-height: 16px;
@@ -277,8 +284,8 @@ th {
 .nav-pills .show>.nav-link {
     color: #fff;
     background-color:#aef4f8;
-    height: 46px;
-    line-height: 46px;
+    height: 45px;
+    line-height: 45px;
     padding: 0px;
 }
 
@@ -287,8 +294,8 @@ th {
     color: #2D2D2D;
     background-color:#FF603B;
     
-    height: 46px;
-    line-height: 46px;
+    height: 45px;
+    line-height: 45px;
     
     padding: 0px;
 
@@ -300,8 +307,8 @@ th {
     background-color:#fff;
     letter-spacing: 1px;
     font-size: 12px;
-    height: 46px;
-    line-height: 46px;
+    height: 45px;
+    line-height: 45px;
     border-radius: 0px;
     padding: 0px;
 }
@@ -316,6 +323,8 @@ th {
     width: 550px;
     height: 48px;
     border-radius: 0px 1px 4px;
+    text-align: center;
+    
 }
 
 .left-box {
@@ -325,6 +334,7 @@ th {
     height: 48px;
     border-radius: 4px 1px 0px 0px;
     z-index: 15;
+    text-align: center;
 }
 
 
@@ -339,9 +349,7 @@ th {
     z-index: -1;
     left: 2px;
     top: -45px;
-    margin-left: 5px;
-    display: none;
-    
+    margin-left: 5px;    
 }
 .search-box {
     border: 1px solid #D9D9D9;
@@ -352,7 +360,7 @@ th {
     z-index: 9999;
     text-align: center;
     font-size: 18px;
-    font-family: "Monument Grotesk";
+    font-family: Monospace;
     
 }
 
@@ -432,7 +440,9 @@ div.year {
 a.page-link {
     color: #FF603B;
     text-align: center;
-    font-family: "Monument Grotesk";
+    font-family: Monospace;
+    font-size: 18px;
+    line-height: 18px;
 }
 a.page-link:hover {
     color: #FF603B;
@@ -443,4 +453,7 @@ a.page-link:hover {
 .container{
     padding-right: 0px;
     padding-left: 0px;
+}
+.Mobile-Tab-view{
+    height: 66px;
 }

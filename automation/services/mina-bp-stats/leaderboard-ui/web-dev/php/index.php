@@ -73,12 +73,18 @@
          <!-- Tab and Search Section Start -->
          <div class="container mb-3 mt-0 mx-sm-0 performance-Container">
             <div class="responcive-tab">
+               <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 mb-5">
+                     <div class="row">
+                        <label class="search_label">find participant</label>
+                        <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Type To Filter" onkeyup="search_result()">
+                     </div>
+               </div>
                <div class="row mx-1">
                   <div class="col-12 px-0 mx-0">
                      <!-- <div class="row">
                         <label for="View" class="text-uppercase">VIEW</label>
                         </div> -->
-                     <div class="row Mobile-Tab-view">
+                     <div class="row Mobile-Tab-view mt-5">
                         <ul class="nav nav-pills text-uppercase text-center">
                            <li class="nav-item left-box">
                               <a data-toggle="pill" class="nav-link active " href="#Data-table" aria-controls="Data-table" aria-selected="true" id="table-one" onclick='showDataForTabOne (10, 1, 0)'>
@@ -98,12 +104,7 @@
                         </ul>
                      </div>
                   </div>
-                  <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 mt-3">
-                     <div class="row">
-                        <label class="search_label">find participant</label>
-                        <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Type To Filter" onkeyup="search_result()">
-                     </div>
-                  </div>
+                  
                </div>
             </div>
          </div>
