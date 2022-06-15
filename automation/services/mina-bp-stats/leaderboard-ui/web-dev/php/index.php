@@ -80,7 +80,7 @@
                         <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Type To Filter" onkeyup="search_result()">
                      </div>
                </div>
-               <div class="row mx-1">
+               <div class="row">
                   <div class="col-12 px-0 mx-0">
                      <!-- <div class="row">
                         <label for="View" class="text-uppercase">VIEW</label>

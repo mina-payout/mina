@@ -38,7 +38,7 @@ $row = array_slice($rowData,$pagestart,$perPageCount);
 $counter = $lowerLimit + 1;
 ?>
 <div class="container mb-0 mt-0 performance-Container">
-<div class="row mx-1 d-flex justify-content-start">
+<div class="row  d-flex justify-content-start">
 <div class="d-flex flex-row-reverse mb-2 mx-sm-auto mx-lg-0">
 <nav aria-label="Page navigation example" style="<?php if($MaintenanceMode == true) {echo 'display: none;';}?>">
   <ul class="pagination justify-content-center">
