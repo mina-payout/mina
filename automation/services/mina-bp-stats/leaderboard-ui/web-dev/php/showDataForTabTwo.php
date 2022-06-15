@@ -48,9 +48,9 @@ $counter = $lowerLimit + 1;
       <a class="page-link" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">First</a>
     </li>
     <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($counter - 1);  ?>');">Prev</a></li>
+        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($lowerLimit - $perPageCount);  ?>');">Prev</a></li>
     <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($counter - 1);  ?>');">Next</a></li>
+        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($lowerLimit + $perPageCount);  ?>');">Next</a></li>
     <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
       <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');">Last</a>
     </li>
@@ -58,8 +58,9 @@ $counter = $lowerLimit + 1;
   </ul>
 </nav>
 </div>
-<span class="d-block  d-md-none">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></span>
+
 </div>
+<span class="d-block  d-md-none text-center">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></span>
 </div>
 
 

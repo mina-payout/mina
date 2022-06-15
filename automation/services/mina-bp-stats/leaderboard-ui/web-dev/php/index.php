@@ -12,6 +12,7 @@
       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
       <link rel="stylesheet" href="assets/css/custom.css">
       <link rel="stylesheet" href="assets/css/responsive.css">
+      
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
    </head>
    <body>
@@ -87,14 +88,14 @@
                      <div class="row Mobile-Tab-view mt-5">
                         <ul class="nav nav-pills text-uppercase text-center">
                            <li class="nav-item left-box">
-                              <a data-toggle="pill" class="nav-link active " href="#Data-table" aria-controls="Data-table" aria-selected="true" id="table-one" onclick='showDataForTabOne (10, 1, 0)'>
+                              <a data-toggle="pill" class="nav-link active " href="#Data-table" aria-controls="Data-table" aria-selected="true" id="table-one" onclick='showDataForTabOne (120, 1, 0)'>
                                  <div class="beta-text">
                                     SNARK-WORK UPTIME SYSTEM (Beta)
                                  </div>
                               </a>
                            </li>
                            <li class="nav-item right-box">
-                              <a data-toggle="pill" class="nav-link" href="#Data-table-2" aria-controls="Data-table-2" aria-selected="false" id="table-two" onclick='showDataForTabTwo (10, 1, 0)'>
+                              <a data-toggle="pill" class="nav-link" href="#Data-table-2" aria-controls="Data-table-2" aria-selected="false" id="table-two" onclick='showDataForTabTwo (120, 1, 0)'>
                                  <div class="beta-text">
                                    SIDECAR UPTIME SYSTEM (Current)
                                  </div>
@@ -134,11 +135,11 @@
                      tabledata = response;
                        
 
-              $("ul li a").each(function () {
-                       if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').attr("aria-selected") === "true") {
-                        showDataForTabTwo (10, 1, 0);
-              }
-          });
+              
+                       if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').hasClass('active')) {
+                        showDataForTabTwo (120, 1, 0);
+                        }
+          
                       $('#loaderSpin').html('');
                   },
 
@@ -160,11 +161,11 @@
               success: function(response) {
                   // alert(response);
                   tabledataSnark = response;
-                  $("ul li a").each(function () {
-                          if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').attr("aria-selected") === "true") {
-                              showDataForTabOne (10, 1, 0);
-                  }
-              });
+                  
+                          if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active'))  {
+                              showDataForTabOne (120, 1, 0);
+                           }
+              
                   $('#loaderSpin').html('');
               },
 
@@ -181,6 +182,7 @@
               cache: false,
               success: function(html) {
                   $('#loaderSpin').html('');
+                  $("#result").html('');
                   $("#result2").html('');
                   $("#result").html(html);
                   $('.Sidecar-Uptime-text').hide();
@@ -201,6 +203,7 @@
                  success: function(html) {
                      $('#loaderSpin').html('');
                      $("#result").html('');
+                     $("#result2").html('');
                      $("#result2").html(html);
                      $('.Sidecar-Uptime-text').show();
                      $('.Snark-work-Uptime-text').hide();
@@ -211,27 +214,27 @@
           let input = document.getElementById('search-input').value
           input=input.toLowerCase();
           if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active')) {
-                              showDataForTabOne (10, 1, 0, input);
+                              showDataForTabOne (120, 1, 0, input);
                   }
                   else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').hasClass('active')) {
-                              showDataForTabTwo (10, 1, 0 , input);
+                              showDataForTabTwo (120, 1, 0 , input);
                   }
 
          }
           $(document).ready(function() {
           console.log("$(document).ready");
-              getRecords(10, 1);
-              getRecordsForSnark(10, 1);
+              getRecords(120, 1);
+              getRecordsForSnark(120, 1);
             $('.Sidecar-Uptime-text').hide();
 
-              $('input[type=search]').on('search', function () {
-                  if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active')) {
-                     showDataForTabOne (10, 1, 0);
-                  }
-                  else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').hasClass('active')) {
-                      showDataForTabTwo (10, 1, 0);
-                  }
-              });
+            //   $('input[type=search]').on('search', function () {
+            //       if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active')) {
+            //          showDataForTabOne (10, 1, 0);
+            //       }
+            //       else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').hasClass('active')) {
+            //           showDataForTabTwo (10, 1, 0);
+            //       }
+            //   });
           });
       </script>
    </body>

@@ -14,9 +14,7 @@
 }
 @font-face {
     font-family: 'Monument Grotesk';
-    src: local('Monument Grotesk Regular'), local('Monument-Grotesk-Regular'),
-        url('fonts/MonumentGrotesk-Regular.woff2') format('woff2'),
-        url('fonts/MonumentGrotesk-Regular.woff') format('woff'),
+    src: 
         url('fonts/MonumentGrotesk-Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
@@ -185,7 +183,7 @@ a:hover {
 }
 .Sidecar-Uptime-text{
     font-family: Monospace;  
-    font-size: 16px;
+    font-size: 19px;
     line-height: 1;
     color: #000000;
     
@@ -196,7 +194,7 @@ a:hover {
 }
 .Snark-work-Uptime-text{
     font-family: Monospace;
-    font-size: 16px;
+    font-size: 19px;
     line-height: 1;
     color: #000000;
 }
@@ -428,21 +426,21 @@ div.year {
 .pagination {
     margin-top: -72px;
     font-family: "Monument Grotesk";
-    margin-right: 5px;
+    
     
 }
 .pagination>.page-item>.page-link {
     height: 50px;
     line-height: 32px;
-    width: 90px;
+    width: 85px;
 
 }
 a.page-link {
     color: #FF603B;
     text-align: center;
     font-family:  "Monument Grotesk";
-    font-size: 18px;
-    line-height: 18px;
+    font-size: 16px;
+    line-height: 15px;
 }
 a.page-link:hover {
     color: #FF603B;

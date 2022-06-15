@@ -131,9 +131,14 @@
     }
     .Mobile-Tab-view{
         display: block;
+        margin-bottom: 10px!important;
+        
+        
     }
     .pagination {
-        margin-top: 0px!important;
+        margin-top: -170px!important;
+        margin-bottom: 50px!important;
+        margin-left: 5px!important;
     }
     .pagination>li.ml-5{
         margin-left: 1rem!important;
@@ -196,7 +201,9 @@
         display: none!important;
     }
     .pagination {
-        margin-top: 0px!important;
+        margin-top: -170px!important;
+        margin-bottom: 50px!important;
+        margin-left: 5px!important;
     }
     .mina-subheader-text {
         justify-content: center;
@@ -373,6 +380,8 @@
     }
     .pagination {
         margin-top: -155px!important;
+        margin-bottom: 50px!important;
+        margin-left: 6px!important;
     }
     .justify-content-center{
         justify-content: end!important;
