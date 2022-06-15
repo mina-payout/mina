@@ -121,6 +121,7 @@
         font-size: 18px;
         line-height: 27px;
         color: #000000;
+        text-align: center;
     }
     /* for Image to Design */
     .Margin-right-for-text {
@@ -187,6 +188,16 @@
         position: absolute;
         left: 50%;
         display: block;
+        text-align: center;
+    }
+    .search-box{
+        text-align: center;
+    }
+    a.page-link{
+        text-align: center;
+    }
+    .table td{
+        text-align: center;
     }
     .topButton>.bottomPlate {
         left: 50%;
@@ -241,6 +252,16 @@
         position: unset!important;
         left: unset!important;
         display: unset!important;
+        text-align: center;
+    }
+    .search-box{
+        text-align: center;
+    }
+    a.page-link{
+        text-align: center;
+    }
+    .table td{
+        text-align: center;
     }
     /* performance Tracker  */
     .topButton>.bottomPlate {
@@ -294,6 +315,16 @@
         position: unset!important;
         left: unset!important;
         display: unset!important;
+        text-align: center;
+    }
+    .search-box{
+        text-align: center;
+    }
+    a.page-link{
+        text-align: center;
+    }
+    .table td{
+        text-align: center;
     }
     /* performance Tracker  */
     .topButton>.bottomPlate {
@@ -332,6 +363,16 @@
         position: unset!important;
         left: unset!important;
         display: unset!important;
+        text-align: center;
+    }
+    .search-box{
+        text-align: center;
+    }
+    a.page-link{
+        text-align: center;
+    }
+    .table td{
+        text-align: center;
     }
     .topButton>.bottomPlate {
         left: 4px!important;
