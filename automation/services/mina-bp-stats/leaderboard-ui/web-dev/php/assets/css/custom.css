@@ -455,3 +455,6 @@ a.page-link:hover {
 .Mobile-Tab-view{
     height: 66px;
 }
+span.d-block.d-md-none.text-center {
+    margin-top: -125px;
+}

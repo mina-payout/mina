@@ -131,14 +131,18 @@
     }
     .Mobile-Tab-view{
         display: block;
-        margin-bottom: 10px!important;
+        margin-bottom: 5px!important;
         
         
+        
+    }
+    .container.pr-0.pl-0.mt-0.mb-5.tab-content{
+        margin-top: 20px!important;
     }
     .pagination {
         margin-top: -170px!important;
         margin-bottom: 50px!important;
-        margin-left: 5px!important;
+        margin-left: 6px!important;
     }
     .pagination>li.ml-5{
         margin-left: 1rem!important;
@@ -203,8 +207,11 @@
     .pagination {
         margin-top: -170px!important;
         margin-bottom: 50px!important;
-        margin-left: 5px!important;
+        /* margin-left: 5px!important; */
     }
+    /* .container.pr-0.pl-0.mt-0.mb-5.tab-content{
+        margin-top: 20px!important;
+    } */
     .mina-subheader-text {
         justify-content: center;
     }
@@ -381,8 +388,12 @@
     .pagination {
         margin-top: -155px!important;
         margin-bottom: 50px!important;
-        margin-left: 6px!important;
+        /* margin-left: 6px!important; */
     }
+    /* .container.pr-0.pl-0.mt-0.mb-5.tab-content{
+        margin-top: 20px!important;
+    } */
+    
     .justify-content-center{
         justify-content: end!important;
     }
