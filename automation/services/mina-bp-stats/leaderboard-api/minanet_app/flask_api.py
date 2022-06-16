@@ -57,9 +57,10 @@ config = {
 template = {
   "swagger": "2.0",
   "info": {
-    "title": "MINA Open API for Uptime Data",
+    "title": "MINA Open API",
     "description": 
-        "API for Sidecar and SNARK uptime data for MINA leaderboard \n ##"
+        "MINA Open API for leaderboard uptime data. The API's returns the data for both Sidecar and SNARK work uptime data. \
+        By default API's will provide most recent scores, and historic scores can use retrieved using data-time parameter. \n ##"
         ,
     "termsOfService": "https://minaprotocol.com/tos",
     "version": "1.0.1"

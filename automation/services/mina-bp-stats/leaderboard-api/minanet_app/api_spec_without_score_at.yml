@@ -14,7 +14,7 @@ parameters:
     default: snarkwork
 responses:
   200:
-    description: A list of block producers and their respective score in decending order for snarkwork data at current time
+    description: A list of block producers and their respective most recent score in descending order of score.
     schema:
       type: array
       items:
