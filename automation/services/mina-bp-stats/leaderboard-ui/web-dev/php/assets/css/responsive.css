@@ -1,3 +1,23 @@
+@media screen and (max-width: 500px) {
+    .delegationButton  {
+      text-align : center;
+      align-items: center;
+    }
+    .search-box  {
+        text-align : center;
+        align-items: center;
+    }
+    a.page-link  {
+        text-align : center;
+        align-items: center;
+    }
+    .table td  {
+        text-align : center;
+        align-items: center;
+    }
+}
+  
+
 @media (max-width: 410px) {
     .mina-banner{
         height: 52px;
