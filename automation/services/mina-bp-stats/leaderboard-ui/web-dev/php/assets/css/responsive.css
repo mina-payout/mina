@@ -1,3 +1,21 @@
+@media not all and (min-resolution:.001dpcm)
+{ @supports (-webkit-appearance:none) and (stroke-color:transparent) {
+
+    .delegationButton.nav-link.active,
+    .delegationButton .show>.nav-link{
+      line-height: 10px;
+    }
+    .form-control.mb-2.mt-2.search-box  {
+        line-height: 10px;
+    }
+    a.page-link  {
+        line-height: 15px;
+    }
+    .table td  {
+        line-height: 50px;
+    }
+}}
+
 @media screen and (max-width: 600px) {
     .delegationButton.nav-link.active,
     .delegationButton .show>.nav-link{

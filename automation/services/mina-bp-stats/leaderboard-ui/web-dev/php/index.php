@@ -38,7 +38,7 @@
          <div class="row mb-3">
             <div class="uptime-lederboard-topButton"></div>
             <div class="col-12 col-md-6 mx-0 px-0 topButton">
-               <button type="button" class="delegationButton nav-link active align-middle" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSduM5EIpwZtf5ohkVepKzs3q0v0--FDEaDfbP2VD4V6GcBepA/viewform')">APPLY FOR DELEGATION <i class="bi bi-arrow-right "></i>
+               <button type="button" class="delegationButton nav-link active" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSduM5EIpwZtf5ohkVepKzs3q0v0--FDEaDfbP2VD4V6GcBepA/viewform')">APPLY FOR DELEGATION <i class="bi bi-arrow-right "></i>
                </button>
                <div class="bottomPlate for-normal" id="leaderBoardbtn">
                </div>
@@ -77,7 +77,7 @@
                <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 mb-5">
                      <div class="row">
                         <label class="search_label">find participant</label>
-                        <input type="search" class="form-control mb-2 mt-2 search-box align-middle" id="search-input" placeholder="Type To Filter" onkeyup="search_result()">
+                        <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Type To Filter" onkeyup="search_result()">
                      </div>
                </div>
                <div class="row">
