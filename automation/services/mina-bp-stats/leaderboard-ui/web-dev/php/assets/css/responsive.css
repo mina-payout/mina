@@ -1,9 +1,10 @@
-@media screen and (max-width: 500px) {
-    .delegationButton  {
+@media screen and (max-width: 600px) {
+    .delegationButton.nav-link.active,
+    .delegationButton .show>.nav-link{
       text-align : center;
       align-items: center;
     }
-    .search-box  {
+    .form-control.mb-2.mt-2.search-box  {
         text-align : center;
         align-items: center;
     }
