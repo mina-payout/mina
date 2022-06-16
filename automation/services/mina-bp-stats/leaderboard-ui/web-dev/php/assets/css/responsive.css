@@ -3,18 +3,22 @@
     .delegationButton .show>.nav-link{
       text-align : center;
       align-items: center;
+      vertical-align: middle;
     }
     .form-control.mb-2.mt-2.search-box  {
         text-align : center;
         align-items: center;
+        vertical-align: middle;
     }
     a.page-link  {
         text-align : center;
         align-items: center;
+        vertical-align: middle;
     }
     .table td  {
         text-align : center;
         align-items: center;
+        vertical-align: middle;
     }
 }
   
@@ -210,15 +214,24 @@
         left: 50%;
         display: block;
         text-align: center;
+        
+    }
+    .delegationButton.nav-link.active,
+    .delegationButton .show>.nav-link{
+        text-align: center;
+        vertical-align: middle;
     }
     .search-box{
         text-align: center;
+        vertical-align: middle;
     }
     a.page-link{
         text-align: center;
+        vertical-align: middle;
     }
     .table td{
         text-align: center;
+        vertical-align: middle;
     }
     .topButton>.bottomPlate {
         left: 50%;
@@ -275,7 +288,7 @@
         display: unset!important;
         text-align: center;
     }
-    .search-box{
+    /* .search-box{
         text-align: center;
     }
     a.page-link{
@@ -283,6 +296,27 @@
     }
     .table td{
         text-align: center;
+    } */
+    .delegationButton.nav-link.active,
+    .delegationButton .show>.nav-link{
+      text-align : center;
+      align-items: center;
+      vertical-align: middle;
+    }
+    .form-control.mb-2.mt-2.search-box  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
+    }
+    a.page-link  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
+    }
+    .table td  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
     }
     /* performance Tracker  */
     .topButton>.bottomPlate {
@@ -338,7 +372,7 @@
         display: unset!important;
         text-align: center;
     }
-    .search-box{
+    /* .search-box{
         text-align: center;
     }
     a.page-link{
@@ -346,6 +380,27 @@
     }
     .table td{
         text-align: center;
+    } */
+    .delegationButton.nav-link.active,
+    .delegationButton .show>.nav-link{
+      text-align : center;
+      align-items: center;
+      vertical-align: middle;
+    }
+    .form-control.mb-2.mt-2.search-box  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
+    }
+    a.page-link  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
+    }
+    .table td  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
     }
     /* performance Tracker  */
     .topButton>.bottomPlate {
@@ -386,7 +441,7 @@
         display: unset!important;
         text-align: center;
     }
-    .search-box{
+    /* .search-box{
         text-align: center;
     }
     a.page-link{
@@ -394,6 +449,27 @@
     }
     .table td{
         text-align: center;
+    } */
+    .delegationButton.nav-link.active,
+    .delegationButton .show>.nav-link{
+      text-align : center;
+      align-items: center;
+      vertical-align: middle;
+    }
+    .form-control.mb-2.mt-2.search-box  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
+    }
+    a.page-link  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
+    }
+    .table td  {
+        text-align : center;
+        align-items: center;
+        vertical-align: middle;
     }
     .topButton>.bottomPlate {
         left: 4px!important;
