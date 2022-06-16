@@ -43,14 +43,14 @@ $counter = $lowerLimit + 1;
 <nav aria-label="Page navigation example" style="<?php if($MaintenanceMode == true) {echo 'display: none;';}?>">
   <ul class="pagination justify-content-center">
     <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-      <a class="page-link" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">First</a>
+      <a class="page-link align-middle" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">First</a>
     </li>
     <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($lowerLimit - $perPageCount);  ?>');">Prev</a></li>
+        <a class="page-link align-middle" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($lowerLimit - $perPageCount);  ?>');">Prev</a></li>
     <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($lowerLimit + $perPageCount);  ?>');">Next</a></li>
+        <a class="page-link align-middle" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($lowerLimit + $perPageCount);  ?>');">Next</a></li>
     <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
-      <a class="page-link" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');">Last</a>
+      <a class="page-link align-middle" href="javascript:void(0);" onclick="showDataForTabOne('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');">Last</a>
     </li>
     <li class = "mr-3 mt-1 p-2 d-none d-md-block">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li>
   </ul>
