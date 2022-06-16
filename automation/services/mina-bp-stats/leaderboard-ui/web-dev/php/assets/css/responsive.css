@@ -6,13 +6,20 @@
       line-height: 10px;
     }
     .form-control.mb-2.mt-2.search-box  {
-        line-height: 10px;
+        line-height: 11px;
+    }
+    .pagination>.page-item>.page-link {
+        line-height: 25px;
     }
     a.page-link  {
-        line-height: 15px;
+        line-height: 12px;
     }
     .table td  {
-        line-height: 50px;
+        line-height: 48px;
+    }
+    .nav-pills .nav-link.active,
+    .nav-pills .show>.nav-link{
+        line-height: 35px;
     }
 }}
 
