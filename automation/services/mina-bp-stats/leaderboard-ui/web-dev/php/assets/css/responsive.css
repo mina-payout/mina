@@ -17,23 +17,17 @@
     .table td  {
         line-height: 48px;
     }
-    .nav-pills .nav-link.active,
-    .nav-pills .show>.nav-link{
-        line-height: 35px;
-    }
-    .nav-pills .nav-link:hover,
-    .nav-pills .show>.nav-link {
-        line-height: 35px;
-    }
-    .nav-pills .nav-link,
-    .nav-pills .show>.nav-link {
-        line-height: 35px;
-    }
-    .mr-3.mt-1.p-2.d-none.d-md-block{
+    
+    .pagination.mr-3.mt-1.p-2.d-none.d-md-block{
         margin-top: 0px!important;
     }
     .mina-banner{
-        background-image: url(../images/AnnouncementBanner.webp);
+        width: 100%;
+        background-size: cover;
+        background-image: url(../images/AnnouncementBanner.jpg);
+        box-sizing: border-box;
+        height: 40px;
+        padding: 0 2.5rem;
     }
 
 }}

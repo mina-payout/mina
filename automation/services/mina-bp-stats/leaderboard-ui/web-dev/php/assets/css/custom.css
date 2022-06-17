@@ -284,7 +284,7 @@ th {
     color: #fff;
     background-color:#aef4f8;
     height: 45px;
-    line-height: 45px;
+    line-height: 40px;
     padding: 0px;
 }
 
@@ -294,7 +294,7 @@ th {
     background-color:#FF603B;
     
     height: 45px;
-    line-height: 45px;
+    line-height: 40px;
     
     padding: 0px;
 
@@ -307,7 +307,7 @@ th {
     letter-spacing: 1px;
     font-size: 12px;
     height: 45px;
-    line-height: 45px;
+    line-height: 40px;
     border-radius: 0px;
     padding: 0px;
 }
