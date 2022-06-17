@@ -9,7 +9,7 @@
         line-height: 11px;
     }
     .pagination>.page-item>.page-link {
-        line-height: 25px;
+        line-height: 16px;
     }
     a.page-link  {
         line-height: 12px;
@@ -21,6 +21,21 @@
     .nav-pills .show>.nav-link{
         line-height: 35px;
     }
+    .nav-pills .nav-link:hover,
+    .nav-pills .show>.nav-link {
+        line-height: 35px;
+    }
+    .nav-pills .nav-link,
+    .nav-pills .show>.nav-link {
+        line-height: 35px;
+    }
+    .mr-3.mt-1.p-2.d-none.d-md-block{
+        margin-top: 0px!important;
+    }
+    .mina-banner{
+        background-image: url(../images/AnnouncementBanner.webp);
+    }
+
 }}
 
 @media screen and (max-width: 600px) {
