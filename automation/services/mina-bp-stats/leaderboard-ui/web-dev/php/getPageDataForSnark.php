@@ -34,12 +34,10 @@ $maxScoreSnark= "WITH recentone as (SELECT batch_end_epoch end_epoch , extract('
     WHERE batch_end_epoch BETWEEN start_epoch and end_epoch";
 
      
-   $maxScoreSnarkresult = pg_query($conn, $maxScoreSnark);
-   $maxScore = pg_fetch_all($maxScoreSnarkresult);     
-    // if ($maxScoreSnarkresult = pg_query($conn, $maxScoreSnark)) {
-    //     $maxScore = pg_fetch_all($maxScoreSnarkresult);
-     
-    // } 
+    $maxScoreSnarkresult = pg_query($conn, $maxScoreSnark);
+    $maxScoreRow = pg_fetch_row($maxScoreSnarkresult);
+    $maxScore = $maxScoreRow[0];
+    
     echo json_encode(array('row' => $row, 'rowCount' => $rowCount, 'maxScore' => $maxScore));
 
 ?>

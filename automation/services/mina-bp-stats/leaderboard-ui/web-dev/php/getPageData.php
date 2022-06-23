@@ -35,8 +35,10 @@ $maxScoreSidecar= "WITH recentone as (SELECT batch_end_epoch end_epoch , extract
 
         
     $maxScoreSidecarresult = pg_query($conn, $maxScoreSidecar);
-    $temp = pg_fetch_all($maxScoreSidecarresult); 
-    $SidecarmaxScore = $temp[0];  
+    $maxScoreRow = pg_fetch_row($maxScoreSidecarresult); 
+    $SidecarmaxScore = $maxScoreRow[0];
+    
+    
       
     echo json_encode(array('row' => $row, 'rowCount' => $rowCount, 'SidecarmaxScore' => $SidecarmaxScore));
 
