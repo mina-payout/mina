@@ -28,7 +28,9 @@ if($SearchInputData != null){
     $newArray = array();
     foreach ($rowData as $key => $rowDataKey){
         if(stripos((strtolower($rowDataKey['block_producer_key'])),$SearchInputData) !== false) {
-            array_push($newArray, $rowDataKey);
+            //array_push($newArray, $rowDataKey);
+            $rowDataKey['index'] = $key + 1;
+            $newArray[$key] = $rowDataKey;
         }
     }
     $rowData = $newArray ;
@@ -77,7 +79,7 @@ $counter = $lowerLimit + 1;
                         ?>
                         <th scope="col">SCORE(60-Day)</th>
                         <?php }?>
-                        <th scope="col">SCORE(%)</th>
+                        <th scope="col">%(Max Score[var])</th>
                     </tr>
                 </thead>
                 <tbody class="">
@@ -97,7 +99,7 @@ $counter = $lowerLimit + 1;
                     ?>
                     
                     <tr>
-                        <td scope="row"><?php echo $counter ?></td>
+                        <td scope="row"><?php if($SearchInputData != null) {echo $data['index'];}else{echo $counter;} ?></td>
                         <td><?php echo $data['block_producer_key'] ?></td>
                         <?php 
                         if($ShowScoreColumn == true){
@@ -115,7 +117,7 @@ $counter = $lowerLimit + 1;
             </table>
         </div>
         <div id="apiLink" class="d-flex flex-row-reverse">
-        <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="/apidocs" target="_blank">MINA Open API for Uptime Data</a>
+        <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="https://docs.google.com/spreadsheets/d/1JTp7nZiw68a-m5KoBeqPr0OOWBVO804xv6HpQNQdKPg/edit#gid=0" target="_blank">MINA Open API for Uptime Data</a>
         </div>
     </div>
     <div style="height: 30px;"></div>

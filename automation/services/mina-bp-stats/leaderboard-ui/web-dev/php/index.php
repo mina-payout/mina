@@ -47,7 +47,7 @@
                <div class="d-flex flex-row-reverse mb-2">
                   <div class="flex-column d-none d-sm-block">
                      <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en/advanced/foundation-delegation-program" target="_blank">Delegation Program Participation Guidelines</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
-                     <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://docs.minaprotocol.com/en" target="_blank">Mina Foundation Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
+                     <div class="text-right"><a class="Mina-Refrance-color alignment-link" href="https://minaprotocol.com/blog/mina-foundation-delegation-policy" target="_blank">Mina Foundation Delegation Policy</a><i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i></div>
                   </div>
                </div>
                <!-- for mobile view -->
@@ -77,7 +77,7 @@
                <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6  px-0 mx-0 mb-5">
                      <div class="row">
                         <label class="search_label">find participant</label>
-                        <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Type To Filter" onkeyup="search_result()">
+                        <input type="search" class="form-control mb-2 mt-2 search-box" id="search-input" placeholder="Filter by BP key" onkeyup="search_result()">
                      </div>
                </div>
                <div class="row">
@@ -173,7 +173,13 @@
          }
 
           function showDataForTabOne(perPageCount, pageNumber, pagestart , input ) {
+            if(!input){
+             input = document.getElementById('search-input').value;
+             if(input.length === 0) {
+               input = null
              if(!input){input = null}
+             }
+            }
           $.ajax({
               type: "POST",
               url: "showDataForTabOne.php",
@@ -193,7 +199,13 @@
          }
 
          function showDataForTabTwo(perPageCount, pageNumber, pagestart ,input ) {
+            if(!input){
           if(!input){input = null}
+             input = document.getElementById('search-input').value;
+             if(input.length === 0) {
+               input = null
+             }
+            }
              $.ajax({
                  type: "POST",
                  url: "showDataForTabTwo.php",
@@ -211,6 +223,7 @@
              });
          }
          function search_result() {
+            //alert('demo');
           let input = document.getElementById('search-input').value
           input=input.toLowerCase();
           if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active')) {
@@ -227,14 +240,14 @@
               getRecordsForSnark(120, 1);
             $('.Sidecar-Uptime-text').hide();
 
-            //   $('input[type=search]').on('search', function () {
-            //       if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active')) {
-            //          showDataForTabOne (10, 1, 0);
-            //       }
-            //       else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').hasClass('active')) {
-            //           showDataForTabTwo (10, 1, 0);
-            //       }
-            //   });
+              $('input[type=search]').on('search', function () {
+                  if ($('#table-one').attr("aria-controls") === "Data-table" && $('#table-one').hasClass('active')) {
+                     showDataForTabOne (10, 1, 0);
+                  }
+                  else if ($('#table-two').attr("aria-controls") === "Data-table-2" && $('#table-two').hasClass('active')) {
+                      showDataForTabTwo (10, 1, 0);
+                  }
+              });
           });
       </script>
    </body>
