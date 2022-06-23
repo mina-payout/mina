@@ -23,7 +23,7 @@ class BaseConfig(object):
     SUBJECT = str(os.environ['SUBJECT']).strip()
     PLAIN_TEXT = str(os.environ['PLAIN_TEXT']).strip()
     SENDGRID_API_KEY = str(os.environ['SENDGRID_API_KEY']).strip()
-    SPREADSHEET_SCOPE = str(os.environ['SPREADSHEET_SCOPE']).strip()
+    SPREADSHEET_SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     SPREADSHEET_NAME = str(os.environ['SPREADSHEET_NAME']).strip()
     SPREADSHEET_JSON = str(os.environ['SPREADSHEET_JSON']).strip()
     MAX_THREADS_TO_DOWNLOAD_FILES= str(os.environ['MAX_THREADS_TO_DOWNLOAD_FILES']).strip()
