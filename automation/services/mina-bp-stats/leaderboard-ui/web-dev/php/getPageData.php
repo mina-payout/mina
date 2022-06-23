@@ -28,9 +28,19 @@ $sqlQuery = "SELECT block_producer_key , score ,score_percent FROM nodes WHERE a
 
     $results = pg_query($conn, $sqlQuery);
     $row = pg_fetch_all($results);
-    
+ 
+$maxScoreSidecar= "WITH recentone as (SELECT batch_end_epoch end_epoch , extract('epoch' FROM (to_timestamp(batch_end_epoch) - interval '60' day )) start_epoch
+    FROM bot_logs b WHERE file_timestamps <= CURRENT_TIMESTAMP ORDER BY batch_end_epoch DESC LIMIT 1) 
+    SELECT COUNT(1) FROM bot_logs , recentone WHERE batch_start_epoch BETWEEN start_epoch and end_epoch";
+
+        
+    $maxScoreSidecarresult = pg_query($conn, $maxScoreSidecar);
+    $temp = pg_fetch_all($maxScoreSidecarresult); 
+    $SidecarmaxScore = $temp[0];  
       
-    echo json_encode(array('row' => $row, 'rowCount' => $rowCount));
+    echo json_encode(array('row' => $row, 'rowCount' => $rowCount, 'SidecarmaxScore' => $SidecarmaxScore));
+
+
 
 ?>
     

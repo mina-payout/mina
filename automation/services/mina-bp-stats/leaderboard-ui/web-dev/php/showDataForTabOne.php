@@ -18,7 +18,9 @@ if (! (isset($_POST['pageNumber']))) {
 $perPageCount = 120;
 
 $rowCount = (int)$tabledata['rowCount'] ;
-
+//echo $rowCount;
+$maxScore = (int)$tabledata['maxScore'] ;
+//echo $maxScore;
 $pagesCount = ceil($rowCount / $perPageCount);
 $lowerLimit = ($pageNumber - 1) * $perPageCount;
 $pagestart = $_POST['pagestart'] ?? null;
@@ -34,6 +36,7 @@ if($SearchInputData != null){
     }
     $rowData = $newArray ;
     $rowCount = count($newArray);
+    //$maxScore =count($newArray);
     $pagesCount = ceil($rowCount / $perPageCount);
 }
 $row = array_slice($rowData,$pagestart,$perPageCount);
@@ -79,7 +82,7 @@ $counter = $lowerLimit + 1;
                         ?>
                         <th scope="col">SCORE(90-Day)</th>
                         <?php }?>
-                        <th scope="col">%(Max Score[var])</th>
+                        <th scope="col">%(Max Score <?php echo $maxScore ?>)</th>
                     </tr>
                 </thead>
                 <tbody class="">
@@ -117,7 +120,7 @@ $counter = $lowerLimit + 1;
             </table>
         </div>
         <div id="apiLink" class="d-flex flex-row-reverse">
-        <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="https://docs.google.com/spreadsheets/d/1JTp7nZiw68a-m5KoBeqPr0OOWBVO804xv6HpQNQdKPg/edit#gid=0" target="_blank">MINA Open API for Uptime Data</a>
+        <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="http://3.237.77.215:5001/apidocs/" target="_blank">MINA Open API for Uptime Data</a>
         </div>
     </div>
     <div style="height: 30px;"></div>
