@@ -1,0 +1,10 @@
+#!/bin/sh
+
+## Do whatever you need with env vars here ...
+service cron start
+atd
+
+python flask_app.py 2>&1 /var/log/minanet/entrypoint.log
+
+# Hand off to the CMD
+exec "$@"
