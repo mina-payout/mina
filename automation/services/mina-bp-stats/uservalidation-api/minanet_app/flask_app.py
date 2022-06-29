@@ -3,6 +3,7 @@ import psycopg2
 from flask import jsonify
 from logger_util import logger
 from config import BaseConfig
+from flask_cors import CORS, cross_origin
 
 
 def get_conn():
@@ -24,6 +25,8 @@ ERROR = 'Error: {0}'
 
 # create app instance
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 def validate_user_details(email, pubkey):
@@ -44,8 +47,8 @@ def validate_user_details(email, pubkey):
 
 
 @app.route('/userkyc/', methods=['GET'])
+@cross_origin()
 def validate_user():
-
     # getting parameters from query_string
     query_parameters = request.args
     email_id = query_parameters.get('email')
