@@ -1,11 +1,13 @@
-import psycopg2
-from datetime import timezone
 import datetime
-from payouts_config import BaseConfig
+from datetime import timezone
+
 import pandas as pd
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
+import psycopg2
 from logger_util import logger
+from payouts_config import BaseConfig
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import (Attachment, Disposition, FileContent,
+                                   FileName, FileType, Mail)
 
 connection_leaderboard = psycopg2.connect(
     host=BaseConfig.POSTGRES_LEADERBOARD_HOST,
@@ -16,7 +18,7 @@ connection_leaderboard = psycopg2.connect(
 )
 
 def get_block_producer_mail(winner_bpk):
-    mail_id_sql = """select block_producer_email from node_record_table where block_producer_key = %s"""
+    mail_id_sql = """select block_producer_email from nodes where block_producer_key = %s"""
     cursor = connection_leaderboard.cursor()
     email = ''
     try:

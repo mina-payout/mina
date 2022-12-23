@@ -1,17 +1,18 @@
-from numpy.core.numeric import NaN
+import json
+import math
+import os
+import sys
+import warnings
+from datetime import datetime, timedelta, timezone
+
 import pandas as pd
 import psycopg2
 from google.cloud import storage
-import os
-import json
-from payouts_config import BaseConfig
-from datetime import datetime, timezone, timedelta
-import math
-import sys
-from validate_email import second_mail
 from logger_util import logger
+from numpy.core.numeric import NaN
 from payout_summary_mail import payout_summary_mail
-import warnings
+from payouts_config import BaseConfig
+from validate_email import second_mail
 
 warnings.filterwarnings('ignore')
 
@@ -30,7 +31,7 @@ connection_payout = psycopg2.connect(
     password=BaseConfig.POSTGRES_PAYOUT_PASSWORD
 )
 
-ERROR = 'Error: {0}'
+ERROR = 'Error : {0}'
 
 
 def read_delegation_record_table(epoch_no):
@@ -63,7 +64,7 @@ def read_staking_json(epoch_no):
     if is_genesis_epoch(epoch_no):
         staking_file_prefix = "staking-1-" # use first ledger, filter out 10,11,12 and so on ..
     else:
-        staking_file_prefix = "staking-" + str(epoch_no)
+        staking_file_prefix = "staking-" + str(epoch_no)+"-"
     blobs = storage_client.list_blobs(bucket, prefix=staking_file_prefix)
     # convert to string
     file_dict_for_memory = dict()
@@ -108,27 +109,27 @@ def determine_slot_range_for_validation(epoch_no, last_slot_validated):
 
 def get_record_for_validation(epoch_no):
     cursor = connection_archive.cursor()
-    query = '''WITH RECURSIVE chain AS (
-    (SELECT b.id, b.state_hash,parent_id, b.creator_id,b.height,b.global_slot_since_genesis,b.global_slot_since_genesis/7140 as epoch,b.staking_epoch_data_id
-    FROM blocks b WHERE height = (select MAX(height) from blocks)
-    ORDER BY timestamp ASC
-    LIMIT 1)
-    UNION ALL
-    SELECT b.id, b.state_hash,b.parent_id, b.creator_id,b.height,b.global_slot_since_genesis,b.global_slot_since_genesis/7140 as epoch,b.staking_epoch_data_id
-    FROM blocks b
-    INNER JOIN chain ON b.id = chain.parent_id AND chain.id <> chain.parent_id
-    ) SELECT  sum(amount)/power(10,9) as total_pay, pk.value as creator ,epoch
-    FROM chain c INNER JOIN blocks_user_commands AS buc on c.id = buc.block_id
-    inner join (SELECT * FROM user_commands where type='payment' ) AS uc on
-     uc.id = buc.user_command_id and status <>'failed'
-    INNER JOIN public_keys as PK ON PK.id = uc.receiver_id 
-    GROUP BY pk.value, epoch'''
+    query = ''' WITH RECURSIVE chain AS ( (SELECT b.id, b.state_hash,parent_id, b.creator_id,b.height, 
+    b.global_slot_since_genesis,b.global_slot_since_genesis/7140 as epoch,b.staking_epoch_data_id FROM blocks b WHERE 
+    height = (select MAX(height) from blocks) ORDER BY timestamp ASC LIMIT 1) 
+    UNION ALL SELECT b.id, b.state_hash, 
+    b.parent_id, b.creator_id,b.height,b.global_slot_since_genesis,b.global_slot_since_genesis/7140 as epoch, 
+    b.staking_epoch_data_id FROM blocks b INNER JOIN chain ON b.id = chain.parent_id AND chain.id <> chain.parent_id
+  ) 
+ , whitelist as( 
+    SELECT amount, uc.receiver_id, epoch,global_slot_since_genesis FROM chain c INNER JOIN blocks_user_commands AS buc on c.id = 
+    buc.block_id inner join (SELECT * FROM user_commands where type='payment' ) AS uc on uc.id = buc.user_command_id 
+    and status <>'failed' Join public_keys as sk on uc.source_id=sk.id where  sk.value not in (select public_key from 
+    whitelist_records wr) --and global_slot_since_genesis   BETWEEN 224840   and 231979 
+ )
+    SELECT (amount)/power(10,9) as total_pay, pk.value as creator,epoch,global_slot_since_genesis
+    FROM whitelist c INNER JOIN public_keys as PK ON PK.id = c.receiver_id  '''
 
     try:
         cursor.execute(query)
         validation_record_list = cursor.fetchall()
         validation_record_df = pd.DataFrame(validation_record_list,
-                                            columns=['total_pay', 'provider_pub_key', 'epoch'])
+                                            columns=['total_pay', 'provider_pub_key', 'epoch', 'global_slot_since_genesis'])
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
         cursor.close()
@@ -226,13 +227,14 @@ def truncate(number, digits=5) -> float:
 
 
 def main(epoch_no, do_send_email):
-    result = 0
+    result = epoch_no
     logger.info("###### in payout_validation main for epoch: {0}".format(epoch_no))
     delegation_record_df = read_delegation_record_table(epoch_no=epoch_no)
     validation_record_df = get_record_for_validation(epoch_no=epoch_no)
+    logger.info(" read transactions complete")
     staking_df = read_staking_json(epoch_no=epoch_no)
-    result = check_db_restore_status(epoch_no)
-    if not staking_df.empty and result >=0:
+    db_staus = check_db_restore_status(epoch_no)
+    if not staking_df.empty and db_staus >=0:
         email_rows = []
         payouts_rows = []
 
@@ -246,11 +248,13 @@ def main(epoch_no, do_send_email):
             filter_validation_record_df = staking_df.loc[(staking_df['pk'] == pub_key) & (staking_df['delegate'] == delegate_pub_key)]
             if not filter_validation_record_df.empty:
                 start_slot, end_slot = determine_slot_range_for_validation(epoch_no, last_slot_validated)
-                payout_recieved = get_record_for_validation_for_single_acc(pub_key, start_slot, end_slot)
+                current_acc_df = validation_record_df.query('provider_pub_key==@pub_key and global_slot_since_genesis >=@start_slot and global_slot_since_genesis<=@end_slot ') 
+                payout_recieved = current_acc_df.groupby('provider_pub_key')['total_pay'].sum()
+                #payout_recieved = get_record_for_validation_for_single_acc(pub_key, start_slot, end_slot)
                 total_pay_received = 0
                 balance_this_epoch = 0
                 if not payout_recieved.empty:
-                    total_pay_received = truncate(payout_recieved.iloc[0]['total_pay'],5)
+                    total_pay_received = truncate(payout_recieved.iloc[0],5)
                     balance_this_epoch = payout_amount - total_pay_received
                 else:
                     balance_this_epoch = payout_amount
@@ -289,11 +293,13 @@ def main(epoch_no, do_send_email):
                 logger.warning("No records found in staking ledger: {0}".format(pub_key))
         insert_into_audit_table(epoch_no)
         # sending second mail 24 hours left for making payments back to foundations account
-        result = epoch_no
+        
         undelegate_df = get_payout_due_records(epoch_no)
         email_df = pd.DataFrame(email_rows, columns=["provider_pub_key", "winner_pub_key", "payout_amount", "payout_received"])
-        if do_send_email:
-            second_mail(email_df, epoch_no)
+        email_df.to_csv(BaseConfig.LOGGING_LOCATION + BaseConfig.VALIDATION_CSV_FILE % (str(epoch_no) + '_email'))
+        if BaseConfig.SEND_SECOND_EMAIL_TO_BP=='True':
+            logger.info("preparing to send second email")
+        #    second_mail(email_df, epoch_no)
 
         payout_summary_df = pd.DataFrame(payouts_rows,
                                             columns=['provider_pub_key', 'winner_pub_key', 'payout_amount',
@@ -304,11 +310,12 @@ def main(epoch_no, do_send_email):
             payout_summary_df = payout_summary_df.append(undelegate_df)
         csv_name=BaseConfig.LOGGING_LOCATION + BaseConfig.VALIDATION_CSV_FILE % (epoch_no)
         payout_summary_df.to_csv(csv_name)
-        payout_summary_mail(csv_name, epoch_no, do_send_email)
+        if BaseConfig.SEND_SUMMARY_EMAIL=='True': 
+            payout_summary_mail(csv_name, epoch_no, BaseConfig.SEND_SUMMARY_EMAIL)
         
     else:
         logger.warning("Staking ledger not found or archive db not updated for epoch number {0}".format(epoch_no))
-        sys.exit(-1)
+        sys.exit(result)
     return result
 
 def get_last_processed_epoch_from_audit(job_type):
@@ -337,16 +344,16 @@ def get_last_processed_epoch_from_audit(job_type):
 def is_genesis_epoch(epoch_id):
     return True if epoch_id<2 else False
 
+
 # this will check audit log table, and will determine last processed epoch
 # if no entries found, default to first epoch
 def initialize():
     result = 0
     last_epoch = get_last_processed_epoch_from_audit('validation')
     logger.info(last_epoch)
-    result = main(last_epoch + 1, True)
     if can_run_job(last_epoch+1):
         logger.info(" validation Audit found for epoch {0}".format(last_epoch))
-        result = main(last_epoch + 1, True)
+        result = main(last_epoch + 1, BaseConfig.SEND_EMAIL_TO_BP)
     else:
         result = last_epoch
     return result

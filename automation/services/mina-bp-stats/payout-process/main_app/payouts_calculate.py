@@ -1,18 +1,19 @@
-import pandas as pd
-from psycopg2 import extras
-import os
 import json
 import math
-from google.cloud import storage
-from payouts_config import BaseConfig
+import os
+import sys
+import warnings
+from datetime import datetime, timedelta, timezone
+from itertools import groupby
+
+import pandas as pd
 import psycopg2
 from calculate_email import send_mail
-from mail_to_foundation_acc import mail_to_foundation_accounts
-from datetime import datetime, timezone, timedelta
+from google.cloud import storage
 from logger_util import logger
-from itertools import groupby
-import warnings
-import sys
+from mail_to_foundation_acc import mail_to_foundation_accounts
+from payouts_config import BaseConfig
+from psycopg2 import extras
 
 warnings.filterwarnings('ignore')
 
@@ -94,7 +95,7 @@ def initialize():
     result = 0
     last_epoch = get_last_processed_epoch_from_audit()
     if can_run_job(last_epoch+1) :
-        result = main(last_epoch + 1, True)
+        result = main(last_epoch + 1, BaseConfig.SEND_EMAIL_TO_BP)
     else:
         result = last_epoch 
     return result
@@ -113,7 +114,7 @@ def read_staking_json_for_epoch(epoch_id):
     if is_genesis_epoch(epoch_id):
         staking_file_prefix = "staking-1-"
     else:
-        staking_file_prefix = "staking-" + str(epoch_id)
+        staking_file_prefix = "staking-" + str(epoch_id)+"-"
     blobs = storage_client.list_blobs(bucket, prefix=staking_file_prefix)
     # convert to string
     ledger_name = ''
@@ -163,8 +164,35 @@ def insert_data(df, page_size=100):
 def truncate(number, digits=5) -> float:
     stepper = 10.0 ** digits
     return math.trunc(stepper * number) / stepper
+    
+def get_blocks_produced_for_all(epoch_no):
+    # calculate blocks produced by delegate
+    query = '''WITH RECURSIVE chain AS (
+    (SELECT b.id, b.state_hash,parent_id, b.creator_id,b.height,b.global_slot_since_genesis/7140 AS epoch,b.staking_epoch_data_id FROM blocks b WHERE height = (select MAX(height) from blocks)
+    ORDER BY timestamp ASC
+    LIMIT 1)
+    UNION ALL
+    SELECT b.id, b.state_hash,b.parent_id, b.creator_id,b.height,b.global_slot_since_genesis/7140 AS epoch,b.staking_epoch_data_id FROM blocks b
+    INNER JOIN chain
+    ON b.id = chain.parent_id AND chain.id <> chain.parent_id
+    ) SELECT count(distinct c.id) as blocks_produced, pk.value as creator
+    FROM chain c INNER JOIN blocks_internal_commands bic  on c.id = bic.block_id
+    INNER JOIN public_keys pk ON pk.id = c.creator_id
+    WHERE epoch = %s
+    GROUP BY pk.value;
+    '''
+    cursor = connection_archive.cursor()
+    try:
+        cursor.execute(query, (epoch_no,))
+        blocks_produced_list = cursor.fetchall()
+        df = pd.DataFrame(blocks_produced_list,
+                                            columns=['blocks_produced', 'creator'])
+    except (Exception, psycopg2.DatabaseError) as error:
+        logger.error(ERROR.format(error))
+        cursor.close()
+    return df    
 
-def calculate_payout(delegation_record_list, modified_staking_df, foundation_bpk, epoch_id):
+def calculate_payout(delegation_record_list, modified_staking_df, foundation_bpk, epoch_id, blocks_produced_df):
     filter_stake_df = modified_staking_df[modified_staking_df['pk'] == foundation_bpk]
     # calculate provider delegates accounts
     delegate_bpk = filter_stake_df['delegate'].values[0]
@@ -187,34 +215,14 @@ def calculate_payout(delegation_record_list, modified_staking_df, foundation_bpk
     payout = (provider_share * 0.95) * BaseConfig.COINBASE
 
     # calculate blocks produced by delegate
-    query = '''WITH RECURSIVE chain AS (
-    (SELECT b.id, b.state_hash,parent_id, b.creator_id,b.height,b.global_slot_since_genesis/7140 AS epoch,b.staking_epoch_data_id FROM blocks b WHERE height = (select MAX(height) from blocks)
-    ORDER BY timestamp ASC
-    LIMIT 1)
-    UNION ALL
-    SELECT b.id, b.state_hash,b.parent_id, b.creator_id,b.height,b.global_slot_since_genesis/7140 AS epoch,b.staking_epoch_data_id FROM blocks b
-    INNER JOIN chain
-    ON b.id = chain.parent_id AND chain.id <> chain.parent_id
-    ) SELECT count(distinct c.id) as blocks_produced, pk.value as creator
-    FROM chain c INNER JOIN blocks_internal_commands bic  on c.id = bic.block_id
-    INNER JOIN public_keys pk ON pk.id = c.creator_id
-    WHERE pk.value= %s and epoch = %s
-    GROUP BY pk.value;
-    '''
-    cursor = connection_archive.cursor()
-    try:
-        cursor.execute(query, (delegate_bpk, epoch_id))
-        blocks_produced_list = cursor.fetchall()
-    except (Exception, psycopg2.DatabaseError) as error:
-        logger.error(ERROR.format(error))
-        cursor.close()
-
-    blocks_produced = 0
-    if blocks_produced_list is not None and len(blocks_produced_list) > 0:
-        blocks_produced = blocks_produced_list[0][0]
-    delegation_record_dict['blocks'] = blocks_produced
+    current_acc_df = blocks_produced_df.query('creator==@delegate_bpk')
+    if not current_acc_df.empty:
+        blocks_produced = current_acc_df.iloc[0]['blocks_produced']
+    else:
+        blocks_produced = 0
 
     # calculate total payout
+    delegation_record_dict['blocks'] = blocks_produced
     total_payout = payout * blocks_produced
     total_payout = truncate(total_payout, 5)
     delegation_record_dict['payout_amount'] = total_payout
@@ -274,8 +282,9 @@ def main(epoch_no, do_send_email):
         i = 0
         delegate_record_df = pd.DataFrame()
         delegation_record_list = list()
+        blocks_produced_df=get_blocks_produced_for_all(epoch_no)
         for accounts in foundation_accounts_list:
-            delegate_record_df = calculate_payout(delegation_record_list, modified_staking_df, accounts, epoch_no)
+            delegate_record_df = calculate_payout(delegation_record_list, modified_staking_df, accounts, epoch_no, blocks_produced_df)
             i = i + 1
         result = insert_data(delegate_record_df)
         csv_name=BaseConfig.LOGGING_LOCATION + BaseConfig.CALCULATION_CSV_FILE % (epoch_no)
@@ -285,9 +294,10 @@ def main(epoch_no, do_send_email):
         logger.info('payouts_calculate complete records for {0}'.format(i))
         # sending emails after payouts calculation completed
         result = epoch_no
-        if do_send_email:
+        if BaseConfig.SEND_EMAIL_TO_BP == 'True' :
             send_mail(epoch_no, delegate_record_df)
             # send email to provider with list of 0 block producers
+        if BaseConfig.SEND_SUMMARY_EMAIL == 'True' :    
             zero_block_producers = delegate_record_df[delegate_record_df['blocks'] == 0]
             zero_block_producers = zero_block_producers[['winner_pub_key']]
             mail_to_foundation_accounts(zero_block_producers, epoch_no)

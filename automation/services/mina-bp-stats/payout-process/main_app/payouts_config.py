@@ -35,11 +35,13 @@ class BaseConfig(object):
     DELEGATION_ADDRESSS_CSV = str(os.environ['DELEGATION_ADDRESSS_CSV']).strip()
     CALCULATION_CSV_FILE=str(os.environ['CALCULATION_CSV_FILE']).strip()
     VALIDATION_CSV_FILE=str(os.environ['VALIDATION_CSV_FILE']).strip()
-
+    
+    SEND_EMAIL_TO_BP = str(os.environ['SEND_EMAIL_TO_BP'])
+    SEND_SECOND_EMAIL_TO_BP = str(os.environ['SEND_SECOND_EMAIL_TO_BP'])
+    SEND_SUMMARY_EMAIL = str(os.environ['SEND_SUMMARY_EMAIL'])
     OVERRIDE_EMAIL=os.environ['OVERRIDE_EMAIL']
     FROM_EMAIL = str(os.environ['FROM_EMAIL'])
     PROVIDER_EMAIL =os.environ['PROVIDER_EMAIL'].split(',')
-    TO_EMAILS = os.environ['TO_EMAILS'].split(',')
     SUBJECT = 'LeaderBoard Stats As of{0}'.format(datetime.datetime.utcnow())
     PLAIN_TEXT = 'Report for Leaderboard as of {0}'.format(datetime.datetime.utcnow())
     CALCULATE_EMAIL_TEMPLATE = str(os.environ['CALCULATE_EMAIL_TEMPLATE']).strip()
