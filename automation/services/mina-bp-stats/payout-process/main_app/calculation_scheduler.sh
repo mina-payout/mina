@@ -10,7 +10,7 @@ then
 	minutes_to_add=1
 else
 	minute_per_epoch=21420
-	next_epoch_number=$((script_output+2))
+	next_epoch_number=$((script_output+1))
 	minutes_to_add=$((minute_per_epoch * next_epoch_number))
 	minutes_to_add=$((minutes_to_add + 300))
 fi
