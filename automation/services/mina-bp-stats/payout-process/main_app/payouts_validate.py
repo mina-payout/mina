@@ -295,8 +295,8 @@ def main(epoch_no, do_send_email):
                     result = -1
                 finally:
                     cursor.close()
-            # else:
-            #     logger.warning("No records found in staking ledger: {0}".format(pub_key))
+            else:
+                logger.warning("No records found in staking ledger: {0}".format(pub_key))
         insert_into_audit_table(epoch_no)
         # sending second mail 24 hours left for making payments back to foundations account
 
