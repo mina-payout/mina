@@ -16,7 +16,7 @@ connection_leaderboard = psycopg2.connect(
 )
 
 def get_block_producer_mail(winner_bpk):
-    mail_id_sql = """select block_producer_email from node_record_table where block_producer_key = %s"""
+    mail_id_sql = """select block_producer_email from nodes where block_producer_key = %s"""
     cursor = connection_leaderboard.cursor()
     email = ''
     try:
