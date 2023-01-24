@@ -6,20 +6,20 @@ import psycopg2
 import pandas as pd
 from logger_util import logger
 
-
 BLOCKS_CSV = 'blocks_won.csv'
+
 
 def mail_to_foundation_accounts(zero_block_producers, epoch_no):
     blocks_df = zero_block_producers
     blocks_df.to_csv(BLOCKS_CSV)
 
     message = Mail(from_email=BaseConfig.FROM_EMAIL,
-                   subject='Zero block producers for epoch '+str(epoch_no),
+                   subject='Zero block producers for epoch ' + str(epoch_no),
                    plain_text_content='Please find the attached list of zero block producers',
                    html_content='<p> Please find the attached list of zero block producers </p>')
-                   
-    for a_email in BaseConfig.PROVIDER_EMAIL: 
-        message.add_to(a_email)               
+
+    for a_email in BaseConfig.PROVIDER_EMAIL:
+        message.add_to(a_email)
 
     with open(BLOCKS_CSV, 'rb') as fd:
         data = fd.read()
