@@ -15,14 +15,15 @@ if __name__ == "__main__":
         last_epoch = v_epoch
     else:
         last_epoch = c_epoch
-    
-    total_epoch_to_cover = 17
-    if last_epoch>=0:
-        end=0
+
+    total_epoch_to_cover = 45
+    if last_epoch >= 0:
+        end = 0
         result = 0
         for count in range(last_epoch, total_epoch_to_cover):
-            calculate_main(count, False)
-            result = v_main(count, False)
+            calculate_main(count, 'False')
+            if count < 45:
+                result = v_main(count, 'False')
     else:
-        total_epoch_to_cover = last_epoch+1
+        total_epoch_to_cover = last_epoch + 1
     sys.exit(total_epoch_to_cover)
