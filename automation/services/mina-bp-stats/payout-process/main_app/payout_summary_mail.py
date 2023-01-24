@@ -6,17 +6,16 @@ import psycopg2
 import pandas as pd
 from logger_util import logger
 
-
 ERROR = 'Error: {0}'
 
+
 def payout_summary_mail(csv_name, epoch_no, do_send_email):
-   
     if do_send_email:
         message = Mail(from_email=BaseConfig.FROM_EMAIL,
-                    to_emails=BaseConfig.PROVIDER_EMAIL,
-                    subject='Payout Summary Details for epoch ' + str(epoch_no),
-                    plain_text_content='Please find the attached list of payout summary details',
-                    html_content='<p> Please find the attached list of payout summary details </p>')
+                       to_emails=BaseConfig.PROVIDER_EMAIL,
+                       subject='Payout Summary Details for epoch ' + str(epoch_no),
+                       plain_text_content='Please find the attached list of payout summary details',
+                       html_content='<p> Please find the attached list of payout summary details </p>')
 
         with open(csv_name, 'rb') as fd:
             data = fd.read()
@@ -27,7 +26,7 @@ def payout_summary_mail(csv_name, epoch_no, do_send_email):
             FileName(csv_name),
             FileType('application/csv'),
             Disposition('attachment')
-        )        
+        )
         message.attachment = attch_file
 
         try:
