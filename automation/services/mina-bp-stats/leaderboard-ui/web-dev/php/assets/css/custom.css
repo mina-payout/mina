@@ -172,7 +172,7 @@ a:hover {
 }
 
 .delegationButton:hover{
-    background-image: url(../images/delegationButtonHover.svg);
+    background-image: url(../newImages/delegationButtonHover.svg);
     background-size: cover;
     border:none;
 }
@@ -347,7 +347,7 @@ th {
 .nav-pills .show>.nav-link {
     color: #fff!important;
     /* background-color:#FF603B; */
-    background-image: url(../images/hoverBackground.jpg);
+    background-image: url(../newImages/hoverBackground.jpg);
     background-size: cover;
     height: 50px;
     line-height: 40px;
@@ -541,7 +541,7 @@ span.d-block.d-md-none.text-center {
 
 .minabg{
     height: 765px;
-    background-image: url(../images/minabg.png);
+    background-image: url(../newImages/minabg.png);
     background-size: cover;
     padding-bottom: 75px;
 }
