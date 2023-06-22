@@ -76,7 +76,7 @@ def get_last_processed_epoch_from_audit():
 
 # determine whether process can run now for given epoch number
 def can_run_job(next_epoch):
-    next_epoch_end = (int(next_epoch) * 7140 * 3) + (100 * 3)
+    next_epoch_end = (int(next_epoch + 1) * 7140 * 3) + (100 * 3)
     next_job_time = BaseConfig.GENESIS_DATE + timedelta(minutes=next_epoch_end)
     next_job_time = next_job_time.replace(tzinfo=timezone.utc)
     next_job_time = next_job_time + timedelta(days=1)
@@ -293,6 +293,12 @@ def main(epoch_no, do_send_email):
             delegate_record_df = calculate_payout(delegation_record_list, modified_staking_df, accounts, epoch_no,
                                                   blocks_produced_df)
             i = i + 1
+        # comment - validation for more than 3 blocks are zero's
+        if delegate_record_df[delegate_record_df['blocks'] == 0]['blocks'].count() > 3:
+            result = 0
+            logger.info("More than 3 BPs has 0 blocks produced")
+            return result
+
         result = insert_data(delegate_record_df)
         csv_name = BaseConfig.LOGGING_LOCATION + BaseConfig.CALCULATION_CSV_FILE % (epoch_no)
         delegate_record_df.to_csv(csv_name)
