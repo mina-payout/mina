@@ -125,6 +125,7 @@ def get_record_for_validation(epoch_no):
     FROM whitelist c INNER JOIN public_keys as PK ON PK.id = c.receiver_id  '''
 
     try:
+        logger.info("getting validation data from ArchiveDB")
         cursor.execute(query)
         validation_record_list = cursor.fetchall()
         validation_record_df = pd.DataFrame(validation_record_list,
@@ -229,18 +230,19 @@ def truncate(number, digits=5) -> float:
     return math.trunc(stepper * number) / stepper
 
 
-def main(epoch_no, do_send_email):
+def main(epoch_no, do_send_email, validation_record_df=None):
     result = epoch_no
     logger.info("###### in payout_validation main for epoch: {0}".format(epoch_no))
     delegation_record_df = read_delegation_record_table(epoch_no=epoch_no)
-    validation_record_df = get_record_for_validation(epoch_no=epoch_no)
+    if (validation_record_df is None):
+        validation_record_df = get_record_for_validation(epoch_no=epoch_no)
     logger.info(" read transactions complete")
     staking_df = read_staking_json(epoch_no=epoch_no)
     db_staus = check_db_restore_status(epoch_no)
     if not staking_df.empty and db_staus >= 0:
         email_rows = []
         payouts_rows = []
-
+        zero_payout_counter = 0
         for row in delegation_record_df.itertuples():
             pub_key = getattr(row, "provider_pub_key")
             payout_amount = getattr(row, "payout_amount")
@@ -263,6 +265,10 @@ def main(epoch_no, do_send_email):
                     balance_this_epoch = payout_amount - total_pay_received
                 else:
                     balance_this_epoch = payout_amount
+
+                if total_pay_received == 0:
+                    zero_payout_counter += 1
+
                 balance_this_epoch = truncate(balance_this_epoch, 5)
                 new_payout_balance = truncate((payout_amount + payout_balance) - total_pay_received)
                 filter_staking_df = staking_df.loc[staking_df['pk'] == pub_key, 'delegate']
@@ -295,8 +301,13 @@ def main(epoch_no, do_send_email):
                     result = -1
                 finally:
                     cursor.close()
-            # else:
-            #     logger.warning("No records found in staking ledger: {0}".format(pub_key))
+            # comment - validation for more than 3 BP's with zero payout_received
+            if zero_payout_counter > 3:
+                logger.info('More Than 3 BPs with Zero payout')
+                result = -1
+                connection_payout.rollback()
+                return result
+
         insert_into_audit_table(epoch_no)
         # sending second mail 24 hours left for making payments back to foundations account
 
