@@ -21,6 +21,8 @@ from multiprocessing import processing_batch_files
 import networkx as nx
 import matplotlib.pyplot as plt
 import warnings
+import glob
+import boto3
 
 warnings.filterwarnings('ignore')
 
@@ -33,6 +35,7 @@ connection = psycopg2.connect(
 )
 
 ERROR = 'Error: {0}'
+
 
 def connect_to_spreadsheet():
     os.environ["PYTHONIOENCODING"] = "utf-8"
@@ -138,6 +141,7 @@ def create_node_record(conn, df, page_size=100):
         return 1
     finally:
         cursor.close()
+    logger.info('create_point_record  end ')
     return 0
 
 
@@ -156,6 +160,7 @@ def create_statehash(conn, statehash_df, page_size=100):
         return -1
     finally:
         cursor.close()
+    logger.info('create_statehash  end ')
     return 0
 
 
@@ -174,13 +179,25 @@ def create_point_record(conn, df, page_size=100):
         return 1
     finally:
         cursor.close()
+    logger.info('create_point_record  end ')
     return 0
 
 
-def get_gcs_bucket():
-    storage_client = storage.Client.from_service_account_json(BaseConfig.CREDENTIAL_PATH)
-    bucket = storage_client.get_bucket(BaseConfig.GCS_BUCKET_NAME)
-    return bucket
+def s3_client_object():
+    client = boto3.client('sts', aws_access_key_id=BaseConfig.ACCESS_KEY,
+                          aws_secret_access_key=BaseConfig.SECRET_KEY, region_name=BaseConfig.REGION_NAME)
+    # account_id = client.get_caller_identity()["Account"]
+    response = client.assume_role(RoleArn=BaseConfig.ARN_ROLE,
+                                  RoleSessionName=BaseConfig.SESSION_NAME)
+    credentials = response['Credentials']
+
+    s3_resource = boto3.resource(
+        's3',
+        aws_access_key_id=credentials['AccessKeyId'],
+        aws_secret_access_key=credentials['SecretAccessKey'],
+        aws_session_token=credentials['SessionToken'],
+    )
+    return s3_resource
 
 
 def download_uptime_files(start_offset, script_start_time, twenty_min_add, delimiter=None):
@@ -193,51 +210,51 @@ def download_uptime_files(start_offset, script_start_time, twenty_min_add, delim
     file_owner = list()
     file_crc32c = list()
     file_md5_hash = list()
-    bucket = get_gcs_bucket()
+    s3_resource = s3_client_object()
     prefix_date = script_start_time.strftime("%Y-%m-%d")
-    prefix = 'submissions/' + prefix_date + '/' + start_offset
-    blobs = bucket.list_blobs(prefix=prefix, delimiter=delimiter)
+    prefix = 'berkeley/submissions/' + prefix_date + '/'
+    bucket = s3_resource.Bucket(BaseConfig.S3_BUCKET_NAME)
 
-    cnt = 1
+    blobs = bucket.objects.filter(Prefix=prefix)
     for blob in blobs:
-        file_timestamp = blob.name.split('/')[2].rsplit('-', 1)[0]
-        file_epoch = calendar.timegm(tm.strptime(file_timestamp,  "%Y-%m-%dT%H:%M:%SZ"))
-        cnt = cnt + 1
-        if file_epoch < twenty_min_add.timestamp() and (file_epoch > script_start_time.timestamp()):
-            json_file_name = blob.name.split('/')[2]
-            file_name_list_for_memory.append(blob.name)
+        if script_start_time < blob.last_modified < twenty_min_add:
+            file_timestamp = blob.key.split('/')[3].rsplit('-', 1)[0]
+            file_name_list_for_memory.append(blob.key)
+            json_file_name = blob.key.split('/')[3]
             file_names.append(json_file_name)
-            file_updated.append(file_timestamp)
+            file_updated.append(blob.last_modified)
             file_created.append(file_timestamp)
-            file_generation.append(blob.generation)
             file_owner.append(blob.owner)
-            file_crc32c.append(blob.crc32c)
-            file_md5_hash.append(blob.md5_hash)
-        elif file_epoch > twenty_min_add.timestamp():
-            break
+            file_generation.append('')
+            file_crc32c.append('')
+            file_md5_hash.append(blob.e_tag)
+
     file_count = len(file_name_list_for_memory)
     if len(file_name_list_for_memory) > 0:
         start = time()
-        file_contents = download_batch_into_memory(file_name_list_for_memory, bucket)
+        file_contents = download_batch_into_memory(file_name_list_for_memory, s3_resource)
         end = time()
         logger.info('Time to download {0} submission files: {1}'.format(file_count, end - start))
         for k, v in file_contents.items():
-            file = k.split('/')[2]
+            file = k.split('/')[3]
             file_json_content_list.append(json.loads(v))
-            # comment- saving the json files to local directory
 
             with open(os.path.join(BaseConfig.SUBMISSION_DIR, file), 'w') as fw:
                 json.dump(json.loads(v), fw)
 
         df = pd.json_normalize(file_json_content_list)
+
         df.insert(0, 'file_name', file_names)
+
         df['file_created'] = file_created
         df['file_updated'] = file_updated
         df['file_generation'] = file_generation
         df['file_owner'] = file_owner
         df['file_crc32c'] = file_crc32c
         df['file_md5_hash'] = file_md5_hash
+
         df['blockchain_height'] = 0
+
         df['blockchain_epoch'] = df['created_at'].apply(
             lambda row: int(calendar.timegm(datetime.strptime(row, "%Y-%m-%dT%H:%M:%SZ").timetuple()) * 1000))
         df = df[['file_name', 'blockchain_epoch', 'created_at', 'peer_id', 'snark_work', 'remote_addr',
@@ -249,14 +266,14 @@ def download_uptime_files(start_offset, script_start_time, twenty_min_add, delim
 
 
 def download_dat_files(state_hashes):
-    bucket = get_gcs_bucket()
+    s3_resource = s3_client_object()
     count = 0
     file_names = list()
     for sh in state_hashes:
-        file_names.append('blocks/' + sh + '.dat')
+        file_names.append('berkeley/blocks/' + sh + '.dat')
 
     start = time()
-    tmp = download_batch_into_files(file_names, bucket)
+    tmp = download_batch_into_files(file_names, s3_resource)
     end = time()
     count = len(os.listdir(BaseConfig.BLOCK_DIR))
 
@@ -266,6 +283,7 @@ def download_dat_files(state_hashes):
 
 def create_uptime_file_history(conn, df, page_size=100):
     temp_df = df.copy(deep=True)
+    # temp_df = temp_df[temp_df['blockchain_height'] > 0]
     temp_df.drop('snark_work', axis=1, inplace=True)
     temp_df.drop('peer_id', axis=1, inplace=True)
     temp_df.drop('created_at', axis=1, inplace=True)
@@ -280,15 +298,18 @@ def create_uptime_file_history(conn, df, page_size=100):
     parent_block_statehash, nodedata_blockheight, nodedata_slot, file_modified_at, file_created_at, file_generation,
     file_crc32c, file_md5_hash) VALUES (%s, %s, %s, (SELECT id FROM nodes WHERE block_producer_key= %s),(SELECT id
     FROM statehash WHERE value=%s),(SELECT id FROM statehash WHERE value=%s), %s, %s, %s, %s, %s, %s, %s) """
+    logger.info('create_uptime_file_history  end ')
     try:
         cursor = conn.cursor()
         extras.execute_batch(cursor, query, tuples, page_size)
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
+        connection.rollback()
         cursor.close()
         return 1
     finally:
-        cursor.close()
+        cursor.close
+    logger.info('create_uptime_file_history  end ')
     return 0
 
 
@@ -440,6 +461,7 @@ def insert_state_hash_results(df, conn=connection, page_size=100):
     query = """INSERT INTO bot_logs_statehash(parent_statehash_id, statehash_id, weight, bot_log_id ) 
         VALUES ( (SELECT id FROM statehash WHERE value= %s), (SELECT id FROM statehash WHERE value= %s), %s, %s ) """
     cursor = conn.cursor()
+
     try:
         extras.execute_batch(cursor, query, tuples, page_size)
     except (Exception, psycopg2.DatabaseError) as error:
@@ -448,6 +470,7 @@ def insert_state_hash_results(df, conn=connection, page_size=100):
         return 1
     finally:
         cursor.close()
+    logger.info('create_bot_logs_statehash  end ')
     return 0
 
 
@@ -486,6 +509,7 @@ def create_bot_log(conn, values):
         return -1
     finally:
         cursor.close()
+    logger.info('create_bot_log  end ')
     return result[0]
 
 
@@ -501,6 +525,7 @@ def get_relation_list(df):
             relation_list.append((parent, child))
     return relation_list
 
+
 def update_scoreboard(conn, score_till_time):
     sql = """with vars  (snapshot_date, start_date) as( values (%s AT TIME ZONE 'UTC', 
 			(%s - interval '%s' day) AT TIME ZONE 'UTC')
@@ -512,12 +537,12 @@ def update_scoreboard(conn, score_till_time):
 	, b_logs as(
 		select (count(1) ) as surveys
 		from bot_logs b , epochs e
-		where b.batch_start_epoch between start_epoch and end_epoch
+		where b.batch_start_epoch >= start_epoch and  b.batch_end_epoch <= end_epoch
 	)
 	, scores as (
 		select p.node_id, count(p.bot_log_id) bp_points
 		from points_summary p join bot_logs b on p.bot_log_id =b.id, epochs
-		where b.batch_end_epoch between start_epoch and end_epoch
+		where b.batch_start_epoch >= start_epoch and  b.batch_end_epoch <= end_epoch
 		group by 1
 	)
 	, final_scores as (
@@ -528,7 +553,7 @@ def update_scoreboard(conn, score_till_time):
 	update nodes nrt set score = s.bp_points, score_percent=s.score_perc  
 	from final_scores s where nrt.id=s.node_id """
 
-    history_sql="""insert into score_history (node_id, score_at, score, score_percent)
+    history_sql = """insert into score_history (node_id, score_at, score, score_percent)
         SELECT id as node_id, %s, score, score_percent from nodes where score is not null """
     try:
         cursor = conn.cursor()
@@ -541,6 +566,30 @@ def update_scoreboard(conn, score_till_time):
     finally:
         cursor.close()
     return 0
+
+
+# enables extra logging on prod to identify invalid block files
+def extraLogging(state_hash_df, master_df):
+    logger.error('Error occurred. ')
+    try:
+        # Get a list of files (file paths) in the given directory
+        list_of_files = filter(os.path.isfile,
+                               glob.glob(BaseConfig.BLOCK_DIR + '/*'))
+        # get list of ffiles with size
+        files_with_size = [(file_path, os.stat(file_path).st_size)
+                           for file_path in list_of_files]
+        # Iterate over list of tuples i.e. file_paths with size
+        # and print them one by one
+        for file_path, file_size in files_with_size:
+            logger.info('Block files downloaded \n: {0} --> {1}'.format(file_path, file_size))
+        log_folder = BaseConfig.LOGGING_LOCATION + 'tmp/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        os.makedirs(log_folder)
+        state_hash_df.to_csv(log_folder + '/state_hash_df.csv')
+        master_df.to_csv(log_folder + '/master_df.csv')
+        # move block files and dowloaded uptime files
+        shutil.copy(BaseConfig.ROOT_DIR, log_folder)
+    except(Exception) as error:
+        logger.error(ERROR.format(error))
 
 
 def main():
@@ -598,8 +647,8 @@ def main():
                     master_df['slot'] = pd.to_numeric(state_hash_df['slot'])
                     master_df['parent_state_hash'] = state_hash_df['parent']
 
-                    #master_df['state_hash'] = master_df['state_hash'].apply(lambda x: x.strip())
-                    #master_df['parent_state_hash'] = master_df['parent_state_hash'].apply(lambda x: x.strip())
+                    # master_df['state_hash'] = master_df['state_hash'].apply(lambda x: x.strip())
+                    # master_df['parent_state_hash'] = master_df['parent_state_hash'].apply(lambda x: x.strip())
                     # comment - get unique statehash in batch data
                     state_hash = pd.unique(master_df[['state_hash', 'parent_state_hash']].values.ravel('k'))
                     state_hash_to_insert = find_new_values_to_insert(existing_state_df,
@@ -619,7 +668,9 @@ def main():
 
                     # comment - insert batch data into uptime_file_history table
                     if uptime_flag:
-                        create_uptime_file_history(connection, master_df)
+                        result = create_uptime_file_history(connection, master_df)
+                        if result < 0:
+                            extraLogging(state_hash_df, master_df)
 
                     if 'snark_work' in master_df.columns:
                         master_df.drop('snark_work', axis=1, inplace=True)
@@ -703,6 +754,7 @@ def main():
             cur_batch_end = prev_batch_end + timedelta(minutes=BaseConfig.SURVEY_INTERVAL_MINUTES)
             if prev_batch_end >= cur_timestamp:
                 do_process = False
+
 
 if __name__ == '__main__':
     main()
