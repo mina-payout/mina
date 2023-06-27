@@ -2,6 +2,7 @@ import logging
 import datetime
 import os
 
+
 class BaseConfig(object):
     DEBUG = False
     LOGGING_LEVEL = logging.INFO
@@ -13,8 +14,15 @@ class BaseConfig(object):
     POSTGRES_PASSWORD = str(os.environ['POSTGRES_PASSWORD']).strip()
     POSTGRES_DB = str(os.environ['POSTGRES_DB']).strip()
 
-    CREDENTIAL_PATH = str(os.environ['CREDENTIAL_PATH']).strip()
-    GCS_BUCKET_NAME = str(os.environ['GCS_BUCKET_NAME']).strip()
+    # CREDENTIAL_PATH = str(os.environ['CREDENTIAL_PATH']).strip()
+    ACCESS_KEY = str(os.environ['ACCESS_KEY']).strip()
+    SECRET_KEY = str(os.environ['SECRET_KEY']).strip()
+    REGION_NAME = str(os.environ['REGION_NAME']).strip()
+    ARN_ROLE = str(os.environ['ARN_ROLE']).strip()
+    SESSION_NAME = str(os.environ['SESSION_NAME']).strip()
+    S3_BUCKET_NAME = str(os.environ['S3_BUCKET_NAME']).strip()
+
+
     PROVIDER_ACCOUNT_PUB_KEYS_FILE = str(os.environ['PROVIDER_ACCOUNT_PUB_KEYS_FILE']).strip()
     SURVEY_INTERVAL_MINUTES = int(os.environ['SURVEY_INTERVAL_MINUTES'])
     UPTIME_DAYS_FOR_SCORE = int(os.environ['UPTIME_DAYS_FOR_SCORE'])
@@ -26,7 +34,7 @@ class BaseConfig(object):
     SPREADSHEET_SCOPE = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
     SPREADSHEET_NAME = str(os.environ['SPREADSHEET_NAME']).strip()
     SPREADSHEET_JSON = str(os.environ['SPREADSHEET_JSON']).strip()
-    MAX_THREADS_TO_DOWNLOAD_FILES= str(os.environ['MAX_THREADS_TO_DOWNLOAD_FILES']).strip()
+    MAX_THREADS_TO_DOWNLOAD_FILES = str(os.environ['MAX_THREADS_TO_DOWNLOAD_FILES']).strip()
     SUBMISSION_DIR = str(os.environ['SUBMISSION_DIR']).strip()
     BLOCK_DIR = str(os.environ['BLOCK_DIR']).strip()
     ROOT_DIR = str(os.environ['ROOT_DIR']).strip()
@@ -35,4 +43,4 @@ class BaseConfig(object):
     START_SCRIPT_EPOCH = int(os.environ['START_SCRIPT_EPOCH'])
     END_SCRIPT_EPOCH = int(os.environ['END_SCRIPT_EPOCH'])
     PERCENT_PARAM = float(os.environ['PERCENT_PARAM'])
-    MAX_DEPTH_INCLUDE=int(os.environ['MAX_DEPTH_INCLUDE'])
+    MAX_DEPTH_INCLUDE = int(os.environ['MAX_DEPTH_INCLUDE'])
