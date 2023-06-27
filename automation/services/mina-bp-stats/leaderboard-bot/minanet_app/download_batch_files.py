@@ -1,8 +1,8 @@
 from logging import Logger
 import threading
-from config import BaseConfig
-from google.cloud.storage import Client as GSClient, Blob
 
+from config import BaseConfig
+# from google.cloud.storage import Client as GSClient, Blob
 
 def download_batch_into_memory(batch, bucket, inclue_metadata=True, max_threads=BaseConfig.MAX_THREADS_TO_DOWNLOAD_FILES):
     """Given a batch of storage filenames, download them into memory.
@@ -23,10 +23,13 @@ def download_batch_into_memory(batch, bucket, inclue_metadata=True, max_threads=
 
     def download_blob(blob_name, state):
         """Standalone function so that we can multithread this."""
-        blob = bucket.blob(blob_name=blob_name)
-        content = blob.download_as_bytes()  # json.loads(blob.download_as_string())
+        # blob = bucket.blob(blob_name=blob_name)
+        # content = blob.download_as_bytes()  # json.loads(blob.download_as_string())
+        # state[blob_name] = content
+        s3_object = bucket.Object(BaseConfig.S3_BUCKET_NAME, blob_name)
+        content = s3_object.get().get('Body').read()
         state[blob_name] = content
-        
+
     batch_data = {bn: {} for bn in batch}
     threads = []
     active_thread_count = 0
@@ -48,8 +51,9 @@ def download_batch_into_memory(batch, bucket, inclue_metadata=True, max_threads=
         thread.join()
     return batch_data
 
-def download_batch_into_files(batch, bucket, inclue_metadata=True, 
-    folder_path=BaseConfig.BLOCK_DIR, max_threads=BaseConfig.MAX_THREADS_TO_DOWNLOAD_FILES):
+
+def download_batch_into_files(batch, bucket, inclue_metadata=True,
+                              folder_path=BaseConfig.BLOCK_DIR, max_threads=BaseConfig.MAX_THREADS_TO_DOWNLOAD_FILES):
     """Given a batch of storage filenames, download them into memory.
 
     Downloading the files in a batch is multithreaded.
@@ -68,14 +72,14 @@ def download_batch_into_files(batch, bucket, inclue_metadata=True,
 
     def download_blob_to_file(blob_name, state):
         """Standalone function so that we can multithread this."""
-        blob = bucket.blob(blob_name=blob_name)
-        if blob.exists()  : #and blob.size>0 isinstance(blob, Blob)
-            destination_uri = '{}/{}'.format(folder_path, blob.name.split('/')[1])
-            blob.download_to_filename(destination_uri)
-            state[blob_name]=1
-        else:
+        my_bucket = bucket.Bucket(BaseConfig.S3_BUCKET_NAME)
+        try:
+            destination_uri = '{}/{}'.format(folder_path, blob_name.split('/')[2])
+            my_bucket.download_file(blob_name, destination_uri)
+            state[blob_name] = 1
+        except Exception as e:
             Logger.warning('Block file not found: {0}'.format(blob_name))
-        
+
     batch_data = {bn: {} for bn in batch}
     threads = []
     active_thread_count = 0
@@ -96,4 +100,3 @@ def download_batch_into_files(batch, bucket, inclue_metadata=True,
     for thread in threads:
         thread.join()
     return batch_data
-
