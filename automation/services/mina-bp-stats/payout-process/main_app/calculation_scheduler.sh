@@ -10,9 +10,9 @@ then
 	minutes_to_add=1
 else
 	minute_per_epoch=21420
-	next_epoch_number=$((script_output+1))
+	next_epoch_number=$((script_output+2))
 	minutes_to_add=$((minute_per_epoch * next_epoch_number))
-	minutes_to_add=$((minutes_to_add + 300))
+	minutes_to_add=$((minutes_to_add + 100))
 fi
 str_minutes="${minutes_to_add}minutes"
 genesis_t=$(date --file=genesis_time.txt)
