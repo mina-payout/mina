@@ -17,11 +17,12 @@ import gspread
 from logger_util import logger
 import subprocess
 import shutil
-from multiprocessing import processing_batch_files
+from file_multiprocessing import processing_batch_files
 import networkx as nx
 import matplotlib.pyplot as plt
 import warnings
 import glob
+import boto3
 
 warnings.filterwarnings('ignore')
 
@@ -182,10 +183,22 @@ def create_point_record(conn, df, page_size=100):
     return 0
 
 
-def get_gcs_bucket():
-    storage_client = storage.Client.from_service_account_json(BaseConfig.CREDENTIAL_PATH)
-    bucket = storage_client.get_bucket(BaseConfig.GCS_BUCKET_NAME)
-    return bucket
+def s3_client_object():
+    client = boto3.client('sts', aws_access_key_id=BaseConfig.ACCESS_KEY,
+                          aws_secret_access_key=BaseConfig.SECRET_KEY, region_name=BaseConfig.REGION_NAME)
+    # account_id = client.get_caller_identity()["Account"]
+    response = client.assume_role(RoleArn=BaseConfig.ARN_ROLE,
+                                  RoleSessionName=BaseConfig.SESSION_NAME)
+    credentials = response['Credentials']
+
+    s3_resource = boto3.resource(
+        's3',
+        aws_access_key_id=credentials['AccessKeyId'],
+        aws_secret_access_key=credentials['SecretAccessKey'],
+        aws_session_token=credentials['SessionToken'],
+    )
+    logger.info('connected to s3 bucket')
+    return s3_resource
 
 
 def download_uptime_files(start_offset, script_start_time, twenty_min_add, delimiter=None):
@@ -198,51 +211,51 @@ def download_uptime_files(start_offset, script_start_time, twenty_min_add, delim
     file_owner = list()
     file_crc32c = list()
     file_md5_hash = list()
-    bucket = get_gcs_bucket()
+    s3_resource = s3_client_object()
     prefix_date = script_start_time.strftime("%Y-%m-%d")
-    prefix = 'submissions/' + prefix_date + '/' + start_offset
-    blobs = bucket.list_blobs(prefix=prefix, delimiter=delimiter)
+    prefix = 'mainnet/submissions/' + prefix_date + '/'
+    bucket = s3_resource.Bucket(BaseConfig.S3_BUCKET_NAME)
 
-    cnt = 1
+    blobs = bucket.objects.filter(Prefix=prefix)
     for blob in blobs:
-        file_timestamp = blob.name.split('/')[2].rsplit('-', 1)[0]
-        file_epoch = calendar.timegm(tm.strptime(file_timestamp, "%Y-%m-%dT%H:%M:%SZ"))
-        cnt = cnt + 1
-        if file_epoch < twenty_min_add.timestamp() and (file_epoch > script_start_time.timestamp()):
-            json_file_name = blob.name.split('/')[2]
-            file_name_list_for_memory.append(blob.name)
+        if script_start_time < blob.last_modified < twenty_min_add:
+            file_timestamp = blob.key.split('/')[3].rsplit('-', 1)[0]
+            file_name_list_for_memory.append(blob.key)
+            json_file_name = blob.key.split('/')[3]
             file_names.append(json_file_name)
-            file_updated.append(file_timestamp)
+            file_updated.append(blob.last_modified)
             file_created.append(file_timestamp)
-            file_generation.append(blob.generation)
             file_owner.append(blob.owner)
-            file_crc32c.append(blob.crc32c)
-            file_md5_hash.append(blob.md5_hash)
-        elif file_epoch > twenty_min_add.timestamp():
-            break
+            file_generation.append(0)
+            file_crc32c.append('empty')
+            file_md5_hash.append(blob.e_tag)
+
     file_count = len(file_name_list_for_memory)
     if len(file_name_list_for_memory) > 0:
         start = time()
-        file_contents = download_batch_into_memory(file_name_list_for_memory, bucket)
+        file_contents = download_batch_into_memory(file_name_list_for_memory, s3_resource)
         end = time()
         logger.info('Time to download {0} submission files: {1}'.format(file_count, end - start))
         for k, v in file_contents.items():
-            file = k.split('/')[2]
+            file = k.split('/')[3]
             file_json_content_list.append(json.loads(v))
-            # comment- saving the json files to local directory
 
             with open(os.path.join(BaseConfig.SUBMISSION_DIR, file), 'w') as fw:
                 json.dump(json.loads(v), fw)
 
         df = pd.json_normalize(file_json_content_list)
+
         df.insert(0, 'file_name', file_names)
+
         df['file_created'] = file_created
         df['file_updated'] = file_updated
         df['file_generation'] = file_generation
         df['file_owner'] = file_owner
         df['file_crc32c'] = file_crc32c
         df['file_md5_hash'] = file_md5_hash
+
         df['blockchain_height'] = 0
+
         df['blockchain_epoch'] = df['created_at'].apply(
             lambda row: int(calendar.timegm(datetime.strptime(row, "%Y-%m-%dT%H:%M:%SZ").timetuple()) * 1000))
         df = df[['file_name', 'blockchain_epoch', 'created_at', 'peer_id', 'snark_work', 'remote_addr',
@@ -254,17 +267,16 @@ def download_uptime_files(start_offset, script_start_time, twenty_min_add, delim
 
 
 def download_dat_files(state_hashes):
-    bucket = get_gcs_bucket()
+    s3_resource = s3_client_object()
     count = 0
     file_names = list()
     for sh in state_hashes:
-        file_names.append('blocks/' + sh + '.dat')
+        file_names.append('mainnet/blocks/' + sh + '.dat')
 
     start = time()
-    tmp = download_batch_into_files(file_names, bucket)
+    tmp = download_batch_into_files(file_names, s3_resource)
     end = time()
     count = len(os.listdir(BaseConfig.BLOCK_DIR))
-
     logger.info('Time to download {0} block files: {1}'.format(count, end - start))
     return count
 
@@ -615,7 +627,7 @@ def main():
             all_file_count = master_df.shape[0]
             if all_file_count > 0:
                 if uptime_flag:
-                    count = download_dat_files(list(master_df.block_hash))
+                    count = download_dat_files(list(master_df.block_hash.unique()))
                     if count <= 0:
                         logger.info("No dat files in BLOCKS directory")
                         break
@@ -629,6 +641,7 @@ def main():
                 end = time()
 
                 logger.info('Time to validate {0} files: {1} seconds'.format(all_file_count, end - start))
+
                 if not state_hash_df.empty:
                     master_df['state_hash'] = state_hash_df['state_hash']
                     master_df['blockchain_height'] = state_hash_df['height']
@@ -670,6 +683,7 @@ def main():
                         columns={'file_updated': 'file_timestamps', 'submitter': 'block_producer_key'})
 
                     c_selected_node = filter_state_hash_percentage(master_df)
+
                     batch_graph = create_graph(master_df, p_selected_node_df, c_selected_node, p_map)
                     weighted_graph, g_pos = apply_weights(batch_graph=batch_graph, c_selected_node=c_selected_node,
                                                           p_selected_node=p_selected_node_df)
