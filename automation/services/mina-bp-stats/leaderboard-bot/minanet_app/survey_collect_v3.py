@@ -21,6 +21,7 @@ from multiprocessing import processing_batch_files
 import networkx as nx
 import matplotlib.pyplot as plt
 import warnings
+import glob
 
 warnings.filterwarnings('ignore')
 
@@ -33,6 +34,7 @@ connection = psycopg2.connect(
 )
 
 ERROR = 'Error: {0}'
+
 
 def connect_to_spreadsheet():
     os.environ["PYTHONIOENCODING"] = "utf-8"
@@ -138,6 +140,7 @@ def create_node_record(conn, df, page_size=100):
         return 1
     finally:
         cursor.close()
+    logger.info('create_point_record  end ')
     return 0
 
 
@@ -156,6 +159,7 @@ def create_statehash(conn, statehash_df, page_size=100):
         return -1
     finally:
         cursor.close()
+    logger.info('create_statehash  end ')
     return 0
 
 
@@ -174,6 +178,7 @@ def create_point_record(conn, df, page_size=100):
         return 1
     finally:
         cursor.close()
+    logger.info('create_point_record  end ')
     return 0
 
 
@@ -201,7 +206,7 @@ def download_uptime_files(start_offset, script_start_time, twenty_min_add, delim
     cnt = 1
     for blob in blobs:
         file_timestamp = blob.name.split('/')[2].rsplit('-', 1)[0]
-        file_epoch = calendar.timegm(tm.strptime(file_timestamp,  "%Y-%m-%dT%H:%M:%SZ"))
+        file_epoch = calendar.timegm(tm.strptime(file_timestamp, "%Y-%m-%dT%H:%M:%SZ"))
         cnt = cnt + 1
         if file_epoch < twenty_min_add.timestamp() and (file_epoch > script_start_time.timestamp()):
             json_file_name = blob.name.split('/')[2]
@@ -266,6 +271,7 @@ def download_dat_files(state_hashes):
 
 def create_uptime_file_history(conn, df, page_size=100):
     temp_df = df.copy(deep=True)
+    # temp_df = temp_df[temp_df['blockchain_height'] > 0]
     temp_df.drop('snark_work', axis=1, inplace=True)
     temp_df.drop('peer_id', axis=1, inplace=True)
     temp_df.drop('created_at', axis=1, inplace=True)
@@ -280,15 +286,18 @@ def create_uptime_file_history(conn, df, page_size=100):
     parent_block_statehash, nodedata_blockheight, nodedata_slot, file_modified_at, file_created_at, file_generation,
     file_crc32c, file_md5_hash) VALUES (%s, %s, %s, (SELECT id FROM nodes WHERE block_producer_key= %s),(SELECT id
     FROM statehash WHERE value=%s),(SELECT id FROM statehash WHERE value=%s), %s, %s, %s, %s, %s, %s, %s) """
+    logger.info('create_uptime_file_history  end ')
     try:
         cursor = conn.cursor()
         extras.execute_batch(cursor, query, tuples, page_size)
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(ERROR.format(error))
+        connection.rollback()
         cursor.close()
         return 1
     finally:
-        cursor.close()
+        cursor.close
+    logger.info('create_uptime_file_history  end ')
     return 0
 
 
@@ -440,6 +449,7 @@ def insert_state_hash_results(df, conn=connection, page_size=100):
     query = """INSERT INTO bot_logs_statehash(parent_statehash_id, statehash_id, weight, bot_log_id ) 
         VALUES ( (SELECT id FROM statehash WHERE value= %s), (SELECT id FROM statehash WHERE value= %s), %s, %s ) """
     cursor = conn.cursor()
+
     try:
         extras.execute_batch(cursor, query, tuples, page_size)
     except (Exception, psycopg2.DatabaseError) as error:
@@ -448,6 +458,7 @@ def insert_state_hash_results(df, conn=connection, page_size=100):
         return 1
     finally:
         cursor.close()
+    logger.info('create_bot_logs_statehash  end ')
     return 0
 
 
@@ -486,6 +497,7 @@ def create_bot_log(conn, values):
         return -1
     finally:
         cursor.close()
+    logger.info('create_bot_log  end ')
     return result[0]
 
 
@@ -501,6 +513,7 @@ def get_relation_list(df):
             relation_list.append((parent, child))
     return relation_list
 
+
 def update_scoreboard(conn, score_till_time):
     sql = """with vars  (snapshot_date, start_date) as( values (%s AT TIME ZONE 'UTC', 
 			(%s - interval '%s' day) AT TIME ZONE 'UTC')
@@ -512,12 +525,12 @@ def update_scoreboard(conn, score_till_time):
 	, b_logs as(
 		select (count(1) ) as surveys
 		from bot_logs b , epochs e
-		where b.batch_start_epoch between start_epoch and end_epoch
+		where b.batch_start_epoch >= start_epoch and  b.batch_end_epoch <= end_epoch
 	)
 	, scores as (
 		select p.node_id, count(p.bot_log_id) bp_points
 		from points_summary p join bot_logs b on p.bot_log_id =b.id, epochs
-		where b.batch_end_epoch between start_epoch and end_epoch
+		where b.batch_start_epoch >= start_epoch and  b.batch_end_epoch <= end_epoch
 		group by 1
 	)
 	, final_scores as (
@@ -528,7 +541,7 @@ def update_scoreboard(conn, score_till_time):
 	update nodes nrt set score = s.bp_points, score_percent=s.score_perc  
 	from final_scores s where nrt.id=s.node_id """
 
-    history_sql="""insert into score_history (node_id, score_at, score, score_percent)
+    history_sql = """insert into score_history (node_id, score_at, score, score_percent)
         SELECT id as node_id, %s, score, score_percent from nodes where score is not null """
     try:
         cursor = conn.cursor()
@@ -541,6 +554,30 @@ def update_scoreboard(conn, score_till_time):
     finally:
         cursor.close()
     return 0
+
+
+# enables extra logging on prod to identify invalid block files
+def extraLogging(state_hash_df, master_df):
+    logger.error('Error occurred. ')
+    try:
+        # Get a list of files (file paths) in the given directory
+        list_of_files = filter(os.path.isfile,
+                               glob.glob(BaseConfig.BLOCK_DIR + '/*'))
+        # get list of ffiles with size
+        files_with_size = [(file_path, os.stat(file_path).st_size)
+                           for file_path in list_of_files]
+        # Iterate over list of tuples i.e. file_paths with size
+        # and print them one by one
+        for file_path, file_size in files_with_size:
+            logger.info('Block files downloaded \n: {0} --> {1}'.format(file_path, file_size))
+        log_folder = BaseConfig.LOGGING_LOCATION + 'tmp/' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        os.makedirs(log_folder)
+        state_hash_df.to_csv(log_folder + '/state_hash_df.csv')
+        master_df.to_csv(log_folder + '/master_df.csv')
+        # move block files and dowloaded uptime files
+        shutil.copy(BaseConfig.ROOT_DIR, log_folder)
+    except(Exception) as error:
+        logger.error(ERROR.format(error))
 
 
 def main():
@@ -598,8 +635,8 @@ def main():
                     master_df['slot'] = pd.to_numeric(state_hash_df['slot'])
                     master_df['parent_state_hash'] = state_hash_df['parent']
 
-                    #master_df['state_hash'] = master_df['state_hash'].apply(lambda x: x.strip())
-                    #master_df['parent_state_hash'] = master_df['parent_state_hash'].apply(lambda x: x.strip())
+                    # master_df['state_hash'] = master_df['state_hash'].apply(lambda x: x.strip())
+                    # master_df['parent_state_hash'] = master_df['parent_state_hash'].apply(lambda x: x.strip())
                     # comment - get unique statehash in batch data
                     state_hash = pd.unique(master_df[['state_hash', 'parent_state_hash']].values.ravel('k'))
                     state_hash_to_insert = find_new_values_to_insert(existing_state_df,
@@ -619,7 +656,9 @@ def main():
 
                     # comment - insert batch data into uptime_file_history table
                     if uptime_flag:
-                        create_uptime_file_history(connection, master_df)
+                        result = create_uptime_file_history(connection, master_df)
+                        if result < 0:
+                            extraLogging(state_hash_df, master_df)
 
                     if 'snark_work' in master_df.columns:
                         master_df.drop('snark_work', axis=1, inplace=True)
@@ -703,6 +742,7 @@ def main():
             cur_batch_end = prev_batch_end + timedelta(minutes=BaseConfig.SURVEY_INTERVAL_MINUTES)
             if prev_batch_end >= cur_timestamp:
                 do_process = False
+
 
 if __name__ == '__main__':
     main()
