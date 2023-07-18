@@ -6,6 +6,7 @@ import subprocess
 import json
 import pandas as pd
 import traceback
+from datetime import datetime, timedelta, timezone
 
 ERROR = 'Error: {0}'
 
@@ -26,7 +27,7 @@ def get_validate_state_hash(batch_file_list, combine_list):
     output = ps.communicate()[0]
     logger.info('Command Output: \n {0}'.format(output))
     output_list = list()
-    default_json_data = {'state_hash': '', 'height': 0, 'slot': 0}
+    default_json_data = {'state_hash': 'None', 'height': 0, 'slot': 0, 'parent': 'None'}
     # read the result from the shell
     for line in output.splitlines():
         try:
@@ -51,10 +52,10 @@ def processing_batch_files(batch_list, max_threads=BaseConfig.MAX_VERIFIER_INSTA
     threads = []
     # clean up all existed docker contianers
     ps = subprocess.Popen(['docker container prune -f'], stderr=subprocess.STDOUT, stdout=subprocess.PIPE, shell=True)
-    if len(batch_list) <= max_threads*2:
+    if len(batch_list) <= max_threads * 2:
         # run only 1 instance if batch size is less than 10
         max_threads = 1
-          
+
     # divide the batch_list into mini_batches based on max_threads ie no. mini batches = max_threads
     mini_batches = [batch_list[i::max_threads] for i in range(max_threads)]
     logger.info('using {0} threads for parallel verification'.format(max_threads))
@@ -78,6 +79,6 @@ def processing_batch_files(batch_list, max_threads=BaseConfig.MAX_VERIFIER_INSTA
     flat_list = [item for sublist in master_list for item in sublist]
     df = pd.DataFrame(flat_list)
     # remove NaN values from list, so that it does not cause SQL error later on
-    df1 = df.where(pd.notnull(df), None)
-    return df1, max_threads
+    # df1 = df.where(pd.notnull(df), None)
+    return df, max_threads
 
