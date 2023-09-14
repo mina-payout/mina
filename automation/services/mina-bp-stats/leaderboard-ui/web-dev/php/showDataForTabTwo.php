@@ -90,7 +90,7 @@ $counter = $lowerLimit + 1;
     </li>
     <!-- <li class = "mr-3 mt-1 p-2 d-none d-md-block">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li> -->
   </ul>
-  <span class="d-none d-sm-block list_last_update">Last updated <?php echo $Sidecarlast_modified ?></span>
+  <span class="d-sm-block list_last_update">Last updated <?php echo $Sidecarlast_modified ?></span>
 
 </div>
 </div>

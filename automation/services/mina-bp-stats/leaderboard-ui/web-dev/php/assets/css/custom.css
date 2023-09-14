@@ -583,6 +583,15 @@ span.d-block.d-md-none.text-center {
     color: #2D2D2D;margin:0;
 }
 
+@media (max-width: 576px){
+    .selectNav_perpage_title{
+        width:51px;
+    }
+    .mr13px{
+        margin-right: 5px!important;
+    }
+    }
+
 .selectNav_selector {
     width: 64px;
     border: none;
@@ -613,4 +622,10 @@ span.d-block.d-md-none.text-center {
     font-size:12px;
     font-weight:500;
     line-height:18px;
+}
+
+@media (max-width: 576px){
+.list_last_update{
+    margin-bottom: -18px;
+}
 }
