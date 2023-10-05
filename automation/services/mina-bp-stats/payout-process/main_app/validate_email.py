@@ -1,13 +1,11 @@
-import datetime
-from datetime import timezone
-
-import pandas as pd
 import psycopg2
-from logger_util import logger
+from datetime import timezone
+import datetime
 from payouts_config import BaseConfig
+import pandas as pd
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import (Attachment, Disposition, FileContent,
-                                   FileName, FileType, Mail)
+from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
+from logger_util import logger
 
 connection_leaderboard = psycopg2.connect(
     host=BaseConfig.POSTGRES_LEADERBOARD_HOST,

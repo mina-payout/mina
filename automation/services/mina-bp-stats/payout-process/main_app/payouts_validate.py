@@ -1,18 +1,17 @@
-import json
-import math
-import os
-import sys
-import warnings
-from datetime import datetime, timedelta, timezone
-
+from numpy.core.numeric import NaN
 import pandas as pd
 import psycopg2
 from google.cloud import storage
-from logger_util import logger
-from numpy.core.numeric import NaN
-from payout_summary_mail import payout_summary_mail
+import os
+import json
 from payouts_config import BaseConfig
+from datetime import datetime, timezone, timedelta
+import math
+import sys
 from validate_email import second_mail
+from logger_util import logger
+from payout_summary_mail import payout_summary_mail
+import warnings
 
 warnings.filterwarnings('ignore')
 
@@ -126,6 +125,7 @@ def get_record_for_validation(epoch_no):
     FROM whitelist c INNER JOIN public_keys as PK ON PK.id = c.receiver_id  '''
 
     try:
+        logger.info("getting validation data from ArchiveDB")
         cursor.execute(query)
         validation_record_list = cursor.fetchall()
         validation_record_df = pd.DataFrame(validation_record_list,
@@ -226,11 +226,12 @@ def truncate(number, digits=5) -> float:
     return math.trunc(stepper * number) / stepper
 
 
-def main(epoch_no, do_send_email):
+def main(epoch_no, do_send_email, validation_record_df=None):
     result = epoch_no
     logger.info("###### in payout_validation main for epoch: {0}".format(epoch_no))
     delegation_record_df = read_delegation_record_table(epoch_no=epoch_no)
-    validation_record_df = get_record_for_validation(epoch_no=epoch_no)
+    if(validation_record_df is None):
+        validation_record_df = get_record_for_validation(epoch_no=epoch_no)
     logger.info(" read transactions complete")
     staking_df = read_staking_json(epoch_no=epoch_no)
     db_staus = check_db_restore_status(epoch_no)
@@ -289,15 +290,15 @@ def main(epoch_no, do_send_email):
                     result = -1
                 finally:
                     cursor.close()
-            else:
-                logger.warning("No records found in staking ledger: {0}".format(pub_key))
+            # else:
+            #     logger.warning("No records found in staking ledger: {0}".format(pub_key))
         insert_into_audit_table(epoch_no)
         # sending second mail 24 hours left for making payments back to foundations account
         
         undelegate_df = get_payout_due_records(epoch_no)
         email_df = pd.DataFrame(email_rows, columns=["provider_pub_key", "winner_pub_key", "payout_amount", "payout_received"])
         email_df.to_csv(BaseConfig.LOGGING_LOCATION + BaseConfig.VALIDATION_CSV_FILE % (str(epoch_no) + '_email'))
-        if BaseConfig.SEND_SECOND_EMAIL_TO_BP=='True':
+        if BaseConfig.SEND_EMAIL_TO_BP=='True':
             logger.info("preparing to send second email")
         #    second_mail(email_df, epoch_no)
 
@@ -364,7 +365,7 @@ def can_run_job(next_epoch):
     next_job_time = BaseConfig.GENESIS_DATE + timedelta(minutes=next_epoch_end)
     next_job_time = next_job_time.replace(tzinfo=timezone.utc)
     next_job_time = next_job_time + timedelta(days=1)
-    next_job_time= next_job_time.replace(hour=00, minute=30)
+    next_job_time= next_job_time.replace(hour=1, minute=00)
     current_time = datetime.now(timezone.utc)
     if next_job_time > current_time:
         result = False

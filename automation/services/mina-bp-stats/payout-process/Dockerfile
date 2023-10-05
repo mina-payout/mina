@@ -14,4 +14,4 @@ RUN chmod 644 /etc/crontab
 
 RUN touch /var/run/atd.pid
 ENTRYPOINT ["/opt/minanet/payout_process/entrypoint"]
-CMD crontab && tail -f /var/log/cron.log
+CMD crontab && tail -f /var/log/minanet/cron.log

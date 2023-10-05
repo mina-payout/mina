@@ -24,7 +24,7 @@ then
 	
 fi
 next_day=$(TZ=GMT date -d "$next_job_time+1 day" "+%Y%m%d")
-mid_night="00:30:00"
+mid_night="01:00:00"
 next_day=$(date -d "$next_day $mid_night" )
 # at support date in format --> %H:%M %m/%d/%y
 formatted_job_time=$(date -d "$next_day" "+%H:%M %m/%d/%y")

@@ -25,6 +25,7 @@ class BaseConfig(object):
     POSTGRES_LEADERBOARD_DB = str(os.environ['POSTGRES_LEADERBOARD_DB']).strip()
 
     COINBASE = int(os.environ['COINBASE'])
+    REWARD_PERCENTAGE = float(os.environ['REWARD_PERCENTAGE'])
     SLOT_WINDOW_VALUE = int(os.environ['SLOT_WINDOW_VALUE'])
     
     CREDENTIAL_PATH = str(os.environ['CREDENTIAL_PATH']).strip()
@@ -37,7 +38,6 @@ class BaseConfig(object):
     VALIDATION_CSV_FILE=str(os.environ['VALIDATION_CSV_FILE']).strip()
     
     SEND_EMAIL_TO_BP = str(os.environ['SEND_EMAIL_TO_BP'])
-    SEND_SECOND_EMAIL_TO_BP = str(os.environ['SEND_SECOND_EMAIL_TO_BP'])
     SEND_SUMMARY_EMAIL = str(os.environ['SEND_SUMMARY_EMAIL'])
     OVERRIDE_EMAIL=os.environ['OVERRIDE_EMAIL']
     FROM_EMAIL = str(os.environ['FROM_EMAIL'])

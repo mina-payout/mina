@@ -1,13 +1,12 @@
-import datetime
-from datetime import timezone
-
-import pandas as pd
 import psycopg2
-from logger_util import logger
+from datetime import timezone
+import datetime
 from payouts_config import BaseConfig
+import pandas as pd
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import (Attachment, Disposition, FileContent,
-                                   FileName, FileType, Mail)
+from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
+from logger_util import logger
+
 
 connection_leaderboard = psycopg2.connect(
     host=BaseConfig.POSTGRES_LEADERBOARD_HOST,
@@ -19,19 +18,18 @@ connection_leaderboard = psycopg2.connect(
 
 
 def get_block_producer_mail(winner_bpk):
-    mail_id_sql = """select block_producer_email from nodes where block_producer_key = %s"""
+    mail_id_sql = """select email_id from nodes where block_producer_key = %s"""
     cursor = connection_leaderboard.cursor()
     email = ''
     try:
-        if BaseConfig.OVERRIDE_EMAIL:
-            email = BaseConfig.OVERRIDE_EMAIL
-        else:
-            cursor.execute(mail_id_sql, (winner_bpk,))
-            if cursor.rowcount > 0:
-                data = cursor.fetchall()
-                email = data[-1][-1]
-                if email == '':
-                    logger.warning("email not found for :".format(winner_bpk))
+        cursor.execute(mail_id_sql, (winner_bpk,))
+        if cursor.rowcount > 0:
+            data = cursor.fetchall()
+            email = data[-1][-1]
+            if email == '':
+                logger.warning("email not found for :".format(winner_bpk))
+            if BaseConfig.OVERRIDE_EMAIL:
+                    email = BaseConfig.OVERRIDE_EMAIL
     except (Exception, psycopg2.DatabaseError) as error:
         logger.info("Error: {0} ".format(error))
         cursor.close()
@@ -67,7 +65,7 @@ def send_mail(epoch_id, delegate_record_df):
         html_content = html_content.replace("#DEADLINE_DATE", str(deadline_date))
         html_content = html_content.replace("#DAY_COUNT", str(day_count))
 
-        subject = f"""Delegation from {BaseConfig.ADDRESS_SUBJECT} Address {payouts_df.iloc[i, 0][:7]}...{payouts_df.iloc[i, 0][-4:]} Send Block Rewards in MINA for Epoch {epoch_id}"""
+        subject = f"""Delegation from {BaseConfig.ADDRESS_SUBJECT} Address {payouts_df.iloc[i, 0][:7]}...{payouts_df.iloc[i, 0][-4:]} Send Block Rewards in MINAS for Epoch {epoch_id}"""
         block_producer_email = get_block_producer_mail(payouts_df.iloc[i, 1])
         message = Mail(from_email=BaseConfig.FROM_EMAIL,
                        to_emails=block_producer_email,

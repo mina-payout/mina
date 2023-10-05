@@ -12,7 +12,7 @@ else
 	minute_per_epoch=21420
 	next_epoch_number=$((script_output+2))
 	minutes_to_add=$((minute_per_epoch * next_epoch_number))
-	minutes_to_add=$((minutes_to_add + 300))
+	minutes_to_add=$((minutes_to_add + 100))
 fi
 str_minutes="${minutes_to_add}minutes"
 genesis_t=$(date --file=genesis_time.txt)
@@ -27,7 +27,7 @@ then
 	
 fi
 next_day=$(TZ=GMT date -d "$next_job_time+1 day" "+%Y%m%d")
-mid_night="00:30:00"
+mid_night="01:00:00"
 next_day=$(date -d "$next_day $mid_night" )
 # at support date in format --> %H:%M %m/%d/%y
 formatted_job_time=$(date -d "$next_day" "+%H:%M %m/%d/%y")

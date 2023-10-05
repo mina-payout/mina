@@ -1,19 +1,18 @@
+import pandas as pd
+from psycopg2 import extras
+import os
 import json
 import math
-import os
-import sys
-import warnings
-from datetime import datetime, timedelta, timezone
-from itertools import groupby
-
-import pandas as pd
+from google.cloud import storage
+from payouts_config import BaseConfig
 import psycopg2
 from calculate_email import send_mail
-from google.cloud import storage
-from logger_util import logger
 from mail_to_foundation_acc import mail_to_foundation_accounts
-from payouts_config import BaseConfig
-from psycopg2 import extras
+from datetime import datetime, timezone, timedelta
+from logger_util import logger
+from itertools import groupby
+import warnings
+import sys
 
 warnings.filterwarnings('ignore')
 
@@ -81,7 +80,8 @@ def can_run_job(next_epoch):
     next_job_time = BaseConfig.GENESIS_DATE + timedelta(minutes=next_epoch_end)
     next_job_time = next_job_time.replace(tzinfo=timezone.utc)
     next_job_time = next_job_time + timedelta(days=1)
-    next_job_time= next_job_time.replace(hour=00, minute=30)
+    next_job_time= next_job_time.replace(hour=1, minute=00)
+    logger.info("can_run_job -> Next job time: {0}".format( next_job_time)) 
     current_time = datetime.now(timezone.utc)
     if next_job_time > current_time:
         result = False
@@ -212,7 +212,7 @@ def calculate_payout(delegation_record_list, modified_staking_df, foundation_bpk
     provider_share = provider_delegation / total_stake
 
     # payout
-    payout = (provider_share * 0.95) * BaseConfig.COINBASE
+    payout = (provider_share * BaseConfig.REWARD_PERCENTAGE) * BaseConfig.COINBASE
 
     # calculate blocks produced by delegate
     current_acc_df = blocks_produced_df.query('creator==@delegate_bpk')
