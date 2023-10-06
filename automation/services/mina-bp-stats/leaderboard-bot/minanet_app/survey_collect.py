@@ -288,26 +288,25 @@ def gcs_main(read_file_interval):
 
             # processing code logic
             master_df = download_files(script_offset, script_start_time, ten_min_add)
+            insert_uptime_file_history_batch(connection, master_df)
+            columns_to_drop = ['receivedFrom', 'nodeData.version', 'nodeData.daemonStatus.blockchainLength',
+                           'nodeData.daemonStatus.syncStatus', 'nodeData.daemonStatus.chainId', 
+                           'nodeData.daemonStatus.commitId', 'nodeData.daemonStatus.highestBlockLengthReceived',
+                           'nodeData.daemonStatus.highestUnvalidatedBlockLengthReceived',
+                           'nodeData.daemonStatus.stateHash', 'nodeData.daemonStatus.blockProductionKeys', 
+                           'nodeData.daemonStatus.uptimeSecs', 'nodeData.retrievedAt','file_created', 
+                           'file_generation', 'file_owner', 'file_crc32c', 'file_md5_hash']
+            master_df.drop(columns_to_drop, axis=1, inplace=True)
+            if master_df.columns.values.tolist()[-1] != NODE_DATA_BLOCK_HEIGHT:
+                master_df = master_df[['file_name', 'file_updated', 'receivedAt', 'blockProducerKey', 'nodeData.block.stateHash',
+                        'nodeData.blockHeight']]
+            
+            master_df = master_df.rename(columns={'file_updated': 'file_timestamps','blockProducerKey':'blockproducerkey',
+                        'nodeData.block.stateHash':'nodedata_block_statehash', 'nodeData.blockHeight':'blockchain_height'})
             
             all_file_count = master_df.shape[0]
 
             if all_file_count>0:
-                insert_uptime_file_history_batch(connection, master_df)
-                columns_to_drop = ['receivedFrom', 'nodeData.version', 'nodeData.daemonStatus.blockchainLength',
-                               'nodeData.daemonStatus.syncStatus', 'nodeData.daemonStatus.chainId', 
-                               'nodeData.daemonStatus.commitId', 'nodeData.daemonStatus.highestBlockLengthReceived',
-                               'nodeData.daemonStatus.highestUnvalidatedBlockLengthReceived',
-                               'nodeData.daemonStatus.stateHash', 'nodeData.daemonStatus.blockProductionKeys', 
-                               'nodeData.daemonStatus.uptimeSecs', 'nodeData.retrievedAt','file_created', 
-                               'file_generation', 'file_owner', 'file_crc32c', 'file_md5_hash']
-                master_df.drop(columns_to_drop, axis=1, inplace=True)
-                if master_df.columns.values.tolist()[-1] != NODE_DATA_BLOCK_HEIGHT:
-                    master_df = master_df[['file_name', 'file_updated', 'receivedAt', 'blockProducerKey', 'nodeData.block.stateHash',
-                            'nodeData.blockHeight']]
-                
-                master_df = master_df.rename(columns={'file_updated': 'file_timestamps','blockProducerKey':'blockproducerkey',
-                            'nodeData.block.stateHash':'nodedata_block_statehash', 'nodeData.blockHeight':'blockchain_height'})
-            
                 # remove the Mina foundation account from the master_df
                 master_df = master_df[~master_df['blockproducerkey'].isin(foundation_df['block_producer_key'])]
 
@@ -355,8 +354,8 @@ def gcs_main(read_file_interval):
                 process_loop_count += 1
                 logger.info('Processed it loop count : {0}'.format(process_loop_count))
             else:
-                logger.error('No Uptime files found for batch {0} - {1}.'.format(script_start_time, script_end_time))
-                # do_process = False
+                logger.info('Finished processing data from table.')
+                do_process = False
             script_start_time = ten_min_add
             
             if script_start_time >= script_end_time:

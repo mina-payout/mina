@@ -3,4 +3,4 @@
 cd /opt/minanet/
 CWD="$(pwd)"
 echo $CWD
-/usr/local/bin/python survey_collect.py
+/usr/local/bin/python survey_collect_v3.py

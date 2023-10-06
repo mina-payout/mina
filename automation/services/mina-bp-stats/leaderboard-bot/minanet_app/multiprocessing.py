@@ -6,6 +6,7 @@ import subprocess
 import json
 import pandas as pd
 import traceback
+from datetime import datetime, timedelta, timezone
 
 ERROR = 'Error: {0}'
 
@@ -18,7 +19,7 @@ def get_validate_state_hash(batch_file_list, combine_list):
     file_names = ' '.join(file_list)
 
     cmd_string1 = f'docker run --cpus={BaseConfig.MAX_CPU_PER_INNSTANCE} -v {BaseConfig.ROOT_DIR}:{BaseConfig.ROOT_DIR} ' \
-                  f'gcr.io/o1labs-192920/delegation-verify:1.2.0-mainnet --block-dir {BaseConfig.BLOCK_DIR} '
+                  f'gcr.io/o1labs-192920/delegation-verify:1.2.3-mainnet --block-dir {BaseConfig.BLOCK_DIR} '
 
     command = cmd_string1 + ' ' + file_names
     logger.info('Executing command: \n {0}'.format(command))
@@ -26,7 +27,7 @@ def get_validate_state_hash(batch_file_list, combine_list):
     output = ps.communicate()[0]
     logger.info('Command Output: \n {0}'.format(output))
     output_list = list()
-    default_json_data = {'state_hash': '', 'height': 0, 'slot': 0}
+    default_json_data = {'state_hash': 'None', 'height': 0, 'slot': 0, 'parent': 'None'}
     # read the result from the shell
     for line in output.splitlines():
         try:
@@ -77,6 +78,7 @@ def processing_batch_files(batch_list, max_threads=BaseConfig.MAX_VERIFIER_INSTA
     # combining the results of each batch and generating the dataframe
     flat_list = [item for sublist in master_list for item in sublist]
     df = pd.DataFrame(flat_list)
-
+    # remove NaN values from list, so that it does not cause SQL error later on
+    #df1 = df.where(pd.notnull(df), None)
     return df, max_threads
 
