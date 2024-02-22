@@ -1,60 +1,13 @@
-/* @font-face {
+@font-face {
     font-family: Monument Grotesk;
     src: url(MonumentGrotesk-Regular.ttf);
-    
-} */
-@font-face {
-    font-family: Monospace;
-    src: 
-        url('fonts/Monospace.ttf'),
-        url('fonts/MonospaceBold.ttf'),
-        url('fonts/MonospaceOblique.ttf');
-    font-weight: 400;
-    font-style: normal;
 }
-
-
-select{
-    appearance: none;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    background-image: url(../images/arrowDown.png)!important;
-    background-repeat: no-repeat!important;
-    background-position:calc(100% - 12px ) center!important;
-    background-size:16px!important;
-
-}
-
-::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-    color: #2D2D2D!important;
-    opacity: 0.3!important;
-    text-align: left!important;
-  }
 
 .container {
-    /* font-family: "Monument Grotesk"; */
+    font-family: Monument Grotesk;
     font-style: normal;
     font-weight: normal;
     margin-top: 3rem;
-}
-
-.Mina-Refrance-color {
-    color: #FF603B;
-    font-size: 18px;
-    line-height: 28px;
-}
-
-@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
-    .container {
-        font-style: normal;
-        font-weight: normal;
-        margin-top: 3rem;
-    }
-    .Mina-Refrance-color {
-        color: #FF603B;
-        font-size: 18px;
-        line-height: 28px;
-    }
 }
 
 a:active {
@@ -97,9 +50,12 @@ a:hover {
     color: #FF603B;
 }
 
-
+.Mina-Refrance-color {
+    color: #FF603B;
+}
 
 .navbar-font {
+    font-family: Monument Grotesk;
     font-style: normal;
     font-weight: normal;
     font-size: 18px;
@@ -143,47 +99,16 @@ a:hover {
 }
 
 .delegationButton {
-    position: relative!important;
-    border: 1px solid #FF603B;
-    outline:none;
+    border: 1px solid #2D2D2D;
     box-sizing: border-box;
     border-radius: 4px 1px;
     z-index: 2;
+    font-family: Monument Grotesk;
     font-size: 12px;
     line-height: 16px;
     letter-spacing: 1px;
     width: 230px;
-    height: 48px !important;
-    text-align: center;
-    margin-bottom: 90px;
-    z-index:5;
 }
-
-.delegationButton::before{
-    content:'';
-    position:absolute;
-    width: 230px;
-    height:48px;
-    border: 1px solid #FF603B;
-    border-radius: 4px 1px;
-    top:4px;
-    left:4px;
-    z-index:-5;
-}
-
-.delegationButton:hover{
-    background-image: url(../newImages/delegationButtonHover.svg);
-    background-size: cover;
-    border:none;
-}
-
-.delegationButton:hover + .delegationButton::before,
-.delegationButton:hover::before
-{
-    opacity: 0;
-}
-
-
 .delegationButton.nav-link.active,
 .delegationButton .show>.nav-link {
     color: #fff;
@@ -194,9 +119,10 @@ a:hover {
     font-size: 15px;
 }
 .search_label{
-    font-family:Monospace;
-    font-weight: 400;
-    font-size:19px;
+    font-family: Monument Grotesk Mono\, monospace;
+    font-style: normal;
+    font-weight: normal;
+    font-size:18px;
     display: block;
     text-transform: uppercase;
     line-height: 1;
@@ -237,25 +163,22 @@ a:hover {
     margin: 0px 6px;
 }
 .Sidecar-Uptime-text{
-    font-family: Monospace;  
-    font-size: 19px;
-    line-height: 1;
-    color: #000000;
+    font-family: "Monument Grotesk, serif";  
+    
     
 }
 .Sidecar-Uptime-text>.p{
+    font-size: 22px;
     font-weight: 400;
     
 }
 .Snark-work-Uptime-text{
-    font-family: Monospace;
-    font-size: 19px;
-    line-height: 1;
-    color: #000000;
+    font-family: "Monument Grotesk, serif";
+   
 }
 
 .Snark-work-Uptime-text>.p{
-    
+    font-size: 22px;
     font-weight: 400;
 }
 /* for policyInfo New Design page */
@@ -266,10 +189,8 @@ a:hover {
 
 .subheader>p {
     /* font-size: 24px; */
-    font-size: 72px;
-    line-height: 87px;
-    font-weight: 400;
-    margin-bottom: 60px;
+    font-size: 48px;
+    line-height: 58px;
 }
 
 .topButton>.bottomPlate {
@@ -307,13 +228,12 @@ a:hover {
 
 th {
     /* font-family: Monument Grotesk; */
-    font-family: Monospace;
+    font-family: monospace;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     font-style: normal;
     font-weight: 400;
-    font-size: 15px;
-    letter-spacing: 2px;
+    font-size: 16px;
     background-color: #2D2D2D;
     color: white;
     line-height: 16px;
@@ -324,7 +244,6 @@ th {
     font-size: 18px;
     line-height: 64px;
     color: #000000;
-    text-align: center;
 }
 
 .mina-top-right-button {
@@ -336,40 +255,33 @@ th {
 
 .nav-pills .nav-link.active,
 .nav-pills .show>.nav-link {
-    color: #FF603B!important;
-    background-color:#F8F8F8;
-    height: 50px;
-    line-height: 40px;
+    color: #fff;
+    background-color:#aef4f8;
+    height: 46px;
+    line-height: 46px;
     padding: 0px;
 }
 
 .nav-pills .nav-link:hover,
 .nav-pills .show>.nav-link {
-    color: #fff!important;
-    /* background-color:#FF603B; */
-    background-image: url(../newImages/hoverBackground.jpg);
-    background-size: cover;
-    height: 50px;
-    line-height: 40px;
+    color: #2D2D2D;
+    background-color:#FF603B;
+    /* letter-spacing: 1px;
+    font-size: 12px; */
+    height: 46px;
+    line-height: 46px;
+    /* border-radius: 0px; */
     padding: 0px;
+    
 }
-
-.nav-pills .nav-item .active .beta-text{
-    color:#FF603B!important;
-}
-
-.nav-pills .nav-link:hover .beta-text{
-    color:#fff!important;
-}
-
 .nav-pills .nav-link,
 .nav-pills .show>.nav-link {
     color: #2D2D2D;
-    /* background-color:#fff; */
+    background-color:#fff;
     letter-spacing: 1px;
     font-size: 12px;
-    height: 50px;
-    line-height: 40px;
+    height: 46px;
+    line-height: 46px;
     border-radius: 0px;
     padding: 0px;
 }
@@ -379,27 +291,20 @@ th {
     font-size: 16px;
 }
 .right-box {
-    /* border: 1px solid #2D2D2D; */
-    border: 1px solid rgba(45, 45, 45, 0.25);
+    border: 1px solid #2D2D2D;
     box-sizing: border-box;
-    width: 324px;
-    height: 52px;
+    width: 550px;
+    height: 48px;
     border-radius: 0px 1px 4px;
-    text-align: center;
-    
 }
 
 .left-box {
-    /* border: 1px solid #2D2D2D; */
-    border: 1px solid rgba(45, 45, 45, 0.25);
-    border-right: none;
+    border: 1px solid #2D2D2D;
     box-sizing: border-box;
-    width: 324px;
-    height: 52px;
+    width: 550px;
+    height: 48px;
     border-radius: 4px 1px 0px 0px;
     z-index: 15;
-    text-align: center;
-    color:white;
 }
 
 
@@ -414,7 +319,9 @@ th {
     z-index: -1;
     left: 2px;
     top: -45px;
-    margin-left: 5px;    
+    margin-left: 5px;
+    display: none;
+    
 }
 .search-box {
     border: 1px solid #D9D9D9;
@@ -422,12 +329,10 @@ th {
     box-shadow: inset 0px 2px 2px rgba(0, 0, 0, 0.15);
     border-radius: 2px;
     height: 52px;
-    width:324px;
     z-index: 9999;
     text-align: center;
-    font-size: 18px;
-    /* font-family: "Monument Grotesk";  */
-    
+    font-size: 20px;
+    font-family: monospace;
 }
 
 
@@ -468,8 +373,6 @@ div.year {
 
 .mina-banner{
     width: 100%;
-    display: flex;
-    justify-content:center;
     background-size: cover;
     background-image: url(../images/AnnouncementBanner.webp);
     box-sizing: border-box;
@@ -489,25 +392,21 @@ div.year {
     text-align: center;
 }
 .maintenanceText{
+    font-family:Monument Grotesk;
     line-height: 58px;
     letter-spacing: -0.01em;
 }
 .pagination {
     margin-top: -72px;
-    
-    
 }
 .pagination>.page-item>.page-link {
     height: 50px;
     line-height: 32px;
-    width: 85px;
-
+    width: 100px;
 }
 a.page-link {
     color: #FF603B;
     text-align: center;
-    font-size: 16px;
-    line-height: 15px;
 }
 a.page-link:hover {
     color: #FF603B;
@@ -518,114 +417,4 @@ a.page-link:hover {
 .container{
     padding-right: 0px;
     padding-left: 0px;
-    /* margin-right: 152px!important;
-    margin-left: 152px!important; */
-}
-.Mobile-Tab-view{
-    height: 66px;
-}
-span.d-block.d-md-none.text-center {
-    margin-top: -125px;
-}
-
-.text-center{
-    text-align: -webkit-center!important;
-
-}
-
-.minalogo{
-    margin-left:-57px;
-    margin-top:-30px;
-    margin-bottom: 125px!important;
-}
-
-.minabg{
-    height: 765px;
-    background-image: url(../newImages/minabg.png);
-    background-size: cover;
-    padding-bottom: 75px;
-}
-
-.page-disable{
-    color:#212529!important;
-    cursor:default!important;
-    text-decoration: none !important;
-    pointer-events:none;
-}
-
-.page-active{
-    color:#FF603B!important;
-    cursor:pointer!important;
-    text-decoration: none !important;
-}
-
-.tableTabs{
-    margin-top:34px;
-}
-
-.selectNav {
-    position:relative;
-    height: 40px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    /* gap: 13px; */
-}
-
-.mr13px{
-    margin-right: 13px!important;
-}
-
-.selectNav_perpage_title{
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 16px;
-    color: #2D2D2D;margin:0;
-}
-
-@media (max-width: 576px){
-    .selectNav_perpage_title{
-        width:51px;
-    }
-    .mr13px{
-        margin-right: 5px!important;
-    }
-    }
-
-.selectNav_selector {
-    width: 64px;
-    border: none;
-    height: 40px;
-    background: #2D2D2D;
-    color: #fff;
-    padding-left: 12px;
-}
-
-.selectNav_list {
-    display:flex;
-    list-style-type:none;
-    /* gap:6px;  */
-    height:100%;
-    align-items:center;
-    margin:0;
-    padding:0;
-}
-.selectNav_list li{
-    margin-right:6px;
-}
-
-.list_last_update{
-    position: absolute;
-    bottom:0;
-    right:0;
-    color:#2D2D2D;
-    font-size:12px;
-    font-weight:500;
-    line-height:18px;
-}
-
-@media (max-width: 576px){
-.list_last_update{
-    margin-bottom: -18px;
-}
 }

@@ -15,17 +15,10 @@ if (! (isset($_POST['pageNumber']))) {
     $pageNumber = $_POST['pageNumber'];
 }
 
-if (! (isset($_POST['perPageCount']))) {
-    $perPageCount = 10;
-} else {
-    $perPageCount = $_POST['perPageCount'];
-}
-
-// $perPageCount = 10;
+$perPageCount = 120;
 
 $rowCount = (int)$tabledata['rowCount'] ;
-$SidecarmaxScore = (int)$tabledata['SidecarmaxScore'] ;
-$Sidecarlast_modified = $tabledata['Sidecarlast_modified'] ;
+
 $pagesCount = ceil($rowCount / $perPageCount);
 $lowerLimit = ($pageNumber - 1) * $perPageCount;
 $pagestart = $_POST['pagestart'] ?? null;
@@ -35,9 +28,7 @@ if($SearchInputData != null){
     $newArray = array();
     foreach ($rowData as $key => $rowDataKey){
         if(stripos((strtolower($rowDataKey['block_producer_key'])),$SearchInputData) !== false) {
-            //array_push($newArray, $rowDataKey);
-            $rowDataKey['index'] = $key + 1;
-            $newArray[$key] = $rowDataKey;
+            array_push($newArray, $rowDataKey);
         }
     }
     $rowData = $newArray ;
@@ -48,54 +39,27 @@ if($SearchInputData != null){
 $row = array_slice($rowData,$pagestart,$perPageCount);
 $counter = $lowerLimit + 1;
 ?>
-
-<div class="container mb-0 mt-0 performance-Container">
-
-<div class="selectNav" >
-    <p class="selectNav_perpage_title mr13px">Results Per Page</p>
-    <select class="selectNav_selector mr13px" value="<?php echo $perPageCount ?>" onchange="showDataForTabTwo(this.value, '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">
-       <?php for ($x = 10; $x <= 100; $x+=10) { ?>
-         <option value="<?php echo $x ?>" <?php if($perPageCount==$x)echo 'selected' ?> ><?php echo $x ?></option>
-       <?php } ?>
-    </select>
-    <ul class="selectNav_list">
-
-    <li >
-        <a class="<?php if($pageNumber > 1) {echo 'page-active ';} else {echo 'page-disable';}?>" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($lowerLimit - $perPageCount);  ?>');">Prev</a></li>
+<div class="container mb-3 mt-0 performance-Container">
+<div class="row mx-1 d-flex justify-content-end">
+<div class="d-flex flex-row-reverse mb-2 mx-sm-auto mx-lg-0">
+<nav aria-label="Page navigation example" style="<?php if($MaintenanceMode == true) {echo 'display: none;';}?>">
+  <ul class="pagination justify-content-center">
+    <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
+      <a class="page-link" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">First</a>
     </li>
-
-    <li >
-      <a class="<?php if($pageNumber <= 1) {echo 'page-disable';} else {echo 'page-active';}?>" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">1</a>
+    <li class="<?php if($pageNumber <= 1) {echo 'page-item disabled';} else {echo 'page-item';}?>">
+        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($counter - 1);  ?>');">Prev</a></li>
+    <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
+        <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($counter - 1);  ?>');">Next</a></li>
+    <li class="<?php if($pageNumber == $pagesCount) {echo 'page-item disabled';} else {echo 'page-item';}?>">
+      <a class="page-link" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');">Last</a>
     </li>
-    <li >
-      <a class="<?php if($pageNumber ==2 ) {echo 'page-disable';} else {echo 'page-active';}?>"href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo 2;  ?>', '<?php  echo 0;  ?>');">2</a>
-    </li>
-    <li>.
-        <?php
-         if($pageNumber>2 && ($pageNumber <($pagesCount-1))) { ?>
-      <a class="page-disable" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pageNumber;  ?>', '<?php  echo 0;  ?>');"> <?php echo $pageNumber ?> </a>
-            
-        <?php } else echo '.' ?>
-        
-    .</li>
-    
-    <li >
-      <a class="<?php if($pageNumber == $pagesCount-1) {echo 'page-disable';} else {echo 'page-active';}?>" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount-1;  ?>', '<?php  echo (($pagesCount - 2) * $perPageCount) ;  ?>');"><?php echo $pagesCount-1?></a>
-    </li>
-    <li >
-      <a class="<?php if($pageNumber == $pagesCount) {echo 'page-disable';} else {echo 'page-active';}?>" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');"><?php echo $pagesCount ?></a>
-    </li>
-    <li >
-        <a class="<?php if($pageNumber == $pagesCount) {echo 'page-disable';} else {echo 'page-active';}?>" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($lowerLimit + $perPageCount);  ?>');">Next</a>
-    </li>
-    <!-- <li class = "mr-3 mt-1 p-2 d-none d-md-block">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li> -->
+    <li class = "ml-5 p-2">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li>
   </ul>
-  <span class="d-sm-block list_last_update">Last updated <?php echo $Sidecarlast_modified ?></span>
-
+</nav>
 </div>
 </div>
-
-
+</div>
 
 <div class="container pr-0 pl-0 mt-0 mb-5 tab-content">
         <div class="table-responsive table-responsive-sm table-responsive-md table-responsive-lg table-responsive-xl tab-pane fade show active" id="Data-table-2" role="tabpanel" aria-labelledby="Data-table-2">
@@ -103,13 +67,13 @@ $counter = $lowerLimit + 1;
                 <thead>
                     <tr class="border-top-0">
                         <th scope="col">RANK</th>
-                        <th scope="col" class="text-left">PUBLIC KEY <s style="font-size:10px"></th>
+                        <th scope="col" class="text-left">PUBLIC KEY</th>
                         <?php 
                         if($ShowScoreColumn == true){
                         ?>
-                        <th scope="col">SCORE(60-Day)</th>
+                        <th scope="col">SCORE</th>
                         <?php }?>
-                        <th scope="col">%(Max Score <?php echo $SidecarmaxScore ?>)</th>
+                        <th scope="col">SCORE(60 Day)</th>
                     </tr>
                 </thead>
                 <tbody class="">
@@ -129,7 +93,7 @@ $counter = $lowerLimit + 1;
                     ?>
                     
                     <tr>
-                        <td scope="row"><?php if($SearchInputData != null) {echo $data['index'];}else{echo $counter;} ?></td>
+                        <td scope="row"><?php echo $counter ?></td>
                         <td><?php echo $data['block_producer_key'] ?></td>
                         <?php 
                         if($ShowScoreColumn == true){
@@ -146,49 +110,9 @@ $counter = $lowerLimit + 1;
                 </tbody>
             </table>
         </div>
-        <div class="container mb-0 mt-0 performance-Container">
-
-<div class="selectNav" >
-    <p class="selectNav_perpage_title mr13px">Results Per Page</p>
-    <select class="selectNav_selector mr13px" value="<?php echo $perPageCount ?>" onchange="showDataForTabTwo(this.value, '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">
-       <?php for ($x = 10; $x <= 100; $x+=10) { ?>
-         <option value="<?php echo $x ?>" <?php if($perPageCount==$x)echo 'selected' ?> ><?php echo $x ?></option>
-       <?php } ?>
-    </select>
-    <ul class="selectNav_list">
-
-    <li >
-        <a class="<?php if($pageNumber > 1) {echo 'page-active ';} else {echo 'page-disable';}?>" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber <= 1){ echo $pageNumber; } else { echo ($pageNumber - 1); } ?>', '<?php  echo ($lowerLimit - $perPageCount);  ?>');">Prev</a></li>
-    </li>
-
-    <li >
-      <a class="<?php if($pageNumber <= 1) {echo 'page-disable';} else {echo 'page-active';}?>" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo 1;  ?>', '<?php  echo 0;  ?>');">1</a>
-    </li>
-    <li >
-      <a class="<?php if($pageNumber ==2 ) {echo 'page-disable';} else {echo 'page-active';}?>"href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo 2;  ?>', '<?php  echo 0;  ?>');">2</a>
-    </li>
-    <li>.
-        <?php
-         if($pageNumber>2 && ($pageNumber <($pagesCount-1))) { ?>
-      <a class="page-disable" href="javascript:void(0);" tabindex="-1" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pageNumber;  ?>', '<?php  echo 0;  ?>');"> <?php echo $pageNumber ?> </a>
-            
-        <?php } else echo '.' ?>
-        
-    .</li>
-    
-    <li >
-      <a class="<?php if($pageNumber == $pagesCount-1) {echo 'page-disable';} else {echo 'page-active';}?>" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount-1;  ?>', '<?php  echo (($pagesCount - 2) * $perPageCount) ;  ?>');"><?php echo $pagesCount-1?></a>
-    </li>
-    <li >
-      <a class="<?php if($pageNumber == $pagesCount) {echo 'page-disable';} else {echo 'page-active';}?>" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php  echo $pagesCount;  ?>', '<?php  echo (($pagesCount - 1) * $perPageCount) ;  ?>');"><?php echo $pagesCount ?></a>
-    </li>
-    <li >
-        <a class="<?php if($pageNumber == $pagesCount) {echo 'page-disable';} else {echo 'page-active';}?>" href="javascript:void(0);" onclick="showDataForTabTwo('<?php echo $perPageCount;  ?>', '<?php if($pageNumber >= $pagesCount){ echo $pageNumber; } else { echo ($pageNumber + 1); } ?>', '<?php  echo ($lowerLimit + $perPageCount);  ?>');">Next</a>
-    </li>
-    <!-- <li class = "mr-3 mt-1 p-2 d-none d-md-block">Page <?php echo $pageNumber; ?> of <?php echo $pagesCount; ?></li> -->
-  </ul>
-</div>
-</div>
+        <div id="apiLink" class="d-flex flex-row-reverse">
+        <i class="ml-2 bi bi-box-arrow-up-right Mina-Refrance-color"></i><a class="Mina-Refrance-color " href="/apidocs" target="_blank">MINA Open API for Uptime Data</a>
+        </div>
     </div>
     <div style="height: 30px;"></div>
 
