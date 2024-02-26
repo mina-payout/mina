@@ -9,37 +9,7 @@
 ***
 
 ## How to change IP address for Leader board UI
-1. >Open File connection.php located in 'web-dev/docker-compose.yml'.
 
-2. > Find Below code and change the subnet Ip with your Config Ip.
-```Javascript
-networks:
-  mina-network:
-    ipam:
-     driver: default
-     config:
-      - subnet: ""
-      - subnet: ""
-```
-3. >In `ipv4_address` You have to chnage Ip with your Ip.
-```Javascript
-php:
-      ...
-      networks:
-        mina-network:
-          ipv4_address: 
-          ipv6_address: 
-   ```
-
-***
-## How to configure postgress Database
->Open File connection.php located in 'web-dev/php/connection.php'. 
-##### $username = "your database username";
-##### $password = "your database username";
-##### $database_name = "your database name";
-##### $port = "your database port";
-##### $host = "your database Host Ip address";
->configure this variables with your credentials and save the file.
 ***
 
 ### Create SSL certificate 
@@ -57,10 +27,24 @@ php:
 ***
 ## Installing Docker file
 1. Download / Move WEB-DEV folder, to home directory in ubuntu.
-2. Go to the terminal.
-3. Type belowe Commands.
-4. * >cd web-dev/
-   * >docker-compose up -d
+2. 1. > Create a config file with below paramerters: 
+##### DB_SIDECAR_HOST=
+##### DB_SIDECAR_PORT=
+##### DB_SIDECAR_USER=
+##### DB_SIDECAR_PWD=
+##### DB_SIDECAR_DB=
+##### DB_SNARK_HOST=
+##### DB_SNARK_PORT=
+##### DB_SNARK_USER=
+##### DB_SNARK_PWD=
+##### DB_SNARK_DB=
+##### API_HOST=
+
+>configure these variables and save the file.
+3. Go to the terminal.
+4. Type belowe Commands.
+5. * >cd web-dev/php
+   * >docker build -t mina-web .
 ### It will install all dependancies and start the container .After finishing the process we will opening the browser with `172.16.238.10`
 ***
 
