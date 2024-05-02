@@ -1,5 +1,5 @@
 import logging
-from config import BaseConfig
+from payouts_config import BaseConfig
 from logging.handlers import RotatingFileHandler
 
 log_file = BaseConfig.LOGGING_LOCATION + 'payout.log'

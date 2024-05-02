@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# start at daemon
+service atd start
+
+# check if data needs to be reprocessed from epoch 0
+
+do_reprocess=${REPROCESS_FROM_EPOCH_0:-False}
+if [ "$do_reprocess" = True ] ; then
+    python payout_master.py 2>&1 /var/log/minanet/payout.log
+    script_output=$?
+    echo "first run completed till epoch: "$script_output
+fi
+# schedule payout jobs initially to run after container starts
+sh /opt/minanet/payout_process/calculation_scheduler.sh
+sh /opt/minanet/payout_process/validation_scheduler.sh
+
+
+exec "$@"
+
+
+
+do_reprocess=${REPROCESS_FROM_EPOCH_0:-False}
+if [ "$do_reprocess" = true ] ; then
+    echo "first run completed till epoch: "
+else
+    echo "value not set "
+fi
