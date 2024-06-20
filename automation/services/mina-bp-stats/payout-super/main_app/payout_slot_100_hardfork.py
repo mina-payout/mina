@@ -5,6 +5,8 @@ import math
 import psycopg2
 import requests as rs
 import numpy as np
+import io
+import ijson
 
 from pandas import json_normalize
 from timeit import default_timer as timer
@@ -17,60 +19,41 @@ from io import StringIO
 
 
 connection_archive = psycopg2.connect(
-     host='' 
-     port=5432,
-     database='' 
-     user='' 
-     password='' 
+    host=BaseConfig.POSTGRES_ARCHIVE_HOST,
+    port=BaseConfig.POSTGRES_ARCHIVE_PORT,
+    database=BaseConfig.POSTGRES_ARCHIVE_DB,
+    user=BaseConfig.POSTGRES_ARCHIVE_USER,
+    password=BaseConfig.POSTGRES_ARCHIVE_PASSWORD
 )
 connection_payout = psycopg2.connect(
-     host='' 
-     port=5432,
-     database='' 
-     user='' 
-     password='' 
+    host=BaseConfig.POSTGRES_PAYOUT_HOST,
+    port=BaseConfig.POSTGRES_PAYOUT_PORT,
+    database=BaseConfig.POSTGRES_PAYOUT_DB,
+    user=BaseConfig.POSTGRES_PAYOUT_USER,
+    password=BaseConfig.POSTGRES_PAYOUT_PASSWORD
 )
 
-connection_leaderboard = psycopg2.connect(
-     host='' 
-     port=5432,
-     database='' 
-     user='' 
-     password='' 
-)
 
-def get_block_producer_mails():
-    mail_id_sql = """select block_producer_key, email_id from nodes """
-    cursor = connection_leaderboard.cursor()
-    
-    try:
-        cursor.execute(mail_id_sql)
-        blocks_produced_list = cursor.fetchall()
-        df = pd.DataFrame(blocks_produced_list, columns=['bp_key', 'email_id'])
-    except (Exception, psycopg2.DatabaseError) as error:
-        logger.exception("get_block_producer_mail")
-        cursor.close()
-    return df
-
-def get_all_blocks_produced_for_epoch(epoch_no):
+def get_all_blocks_produced_for_epoch(start_slot, end_slot):
     # calculate blocks produced by delegate
     query = '''WITH RECURSIVE chain AS (
-    (SELECT b.id, b.state_hash,parent_id, b.creator_id,b.height,b.global_slot_since_genesis/7140 AS epoch,b.staking_epoch_data_id FROM blocks b WHERE height = (select MAX(height) from blocks)
-    ORDER BY timestamp ASC
-    LIMIT 1)
+    (SELECT b.id, b.state_hash,parent_id, b.creator_id,b.height,b.global_slot_since_genesis/7140 AS epoch,b.global_slot_since_genesis 
+        FROM blocks b WHERE height = (select MAX(height) from blocks)
+        ORDER BY timestamp ASC
+        LIMIT 1)
     UNION ALL
-    SELECT b.id, b.state_hash,b.parent_id, b.creator_id,b.height,b.global_slot_since_genesis/7140 AS epoch,b.staking_epoch_data_id FROM blocks b
-    INNER JOIN chain
-    ON b.id = chain.parent_id AND chain.id <> chain.parent_id
+    SELECT b.id, b.state_hash,b.parent_id, b.creator_id,b.height,b.global_slot_since_genesis/7140 AS epoch,
+        b.global_slot_since_genesis FROM blocks b INNER JOIN chain
+            ON b.id = chain.parent_id AND chain.id <> chain.parent_id
     ) SELECT count(distinct c.id) as blocks_produced, pk.value as creator
     FROM chain c INNER JOIN blocks_internal_commands bic  on c.id = bic.block_id
     INNER JOIN public_keys pk ON pk.id = c.creator_id
-    WHERE epoch = %s
+    WHERE global_slot_since_genesis between %s and %s 
     GROUP BY pk.value;
     '''
     cursor = connection_archive.cursor()
     try:
-        cursor.execute(query, (epoch_no,))
+        cursor.execute(query, (start_slot, end_slot))
         blocks_produced_list = cursor.fetchall()
         df = pd.DataFrame(blocks_produced_list,
                                             columns=['blocks_produced', 'creator'])
@@ -78,38 +61,6 @@ def get_all_blocks_produced_for_epoch(epoch_no):
         logger.exception("get_all_blocks_produced_for_epoch")
         cursor.close()
     return df    
-
-def get_all_blocks_won_for_epoch(epoch_no):
-    # calculate blocks produced by delegate
-    query = ''' WITH RECURSIVE chain AS (
-    (SELECT b.id, b.state_hash,parent_id, b.block_winner_id, b.height,b.global_slot_since_genesis/7140 AS epoch,b.staking_epoch_data_id 
-    	FROM blocks b 
-    	WHERE height = (select MAX(height) from blocks)
-    ORDER BY timestamp ASC
-    LIMIT 1)
-    UNION ALL
-    SELECT b.id, b.state_hash,b.parent_id, b.block_winner_id, b.height,b.global_slot_since_genesis/7140 AS epoch,b.staking_epoch_data_id 
-    	FROM blocks b
-    INNER JOIN chain
-    ON b.id = chain.parent_id AND chain.id <> chain.parent_id
-    ) SELECT count(distinct c.id) as blocks_produced, pk.value as winner
-    FROM chain c INNER JOIN blocks_internal_commands bic  on c.id = bic.block_id
-    INNER JOIN public_keys pk ON pk.id = c.block_winner_id
-    WHERE epoch = %s
-    GROUP BY pk.value   ;
-    '''
-    cursor = connection_archive.cursor()
-    try:
-        cursor.execute(query, (epoch_no,))
-        blocks_produced_list = cursor.fetchall()
-        df = pd.DataFrame(blocks_produced_list,
-                                            columns=['blocks_produced', 'winner'])
-    except (Exception, psycopg2.DatabaseError) as error:
-        logger.exception("error while getting blocks won")
-        cursor.close()
-    return df   
-
-
 
 def insert_into_staking_ledger(modified_staking_df, epoch_no):
     tmp = modified_staking_df[['pk', 'balance','delegate']].copy()
@@ -155,8 +106,7 @@ def insert_into_wallet_mapping(wallet_mapping_df):
     return result
 
 def save_payout_summary(df, epoch, page_size=100):
-    tmp_df = df[['delegating_wallet_key','bpdelegationpublickey', 'blocks_produced', 'payout_amount', 
-    'blocks_won', 'burn_reward']].copy()
+    tmp_df = df[['delegating_wallet_key','bpdelegationpublickey', 'blocks_produced', 'payout_amount']].copy()
     tmp_df['payout_balance'] = 0
     tmp_df['burn_balance'] = 0
     tmp_df['epoch'] = epoch
@@ -164,12 +114,13 @@ def save_payout_summary(df, epoch, page_size=100):
     #tmp_df = tmp_df.drop(['delegating_wallet_name','return_wallet', 'bpemailaddress'], axis=1, inplace=True)
     tuples = [tuple(x) for x in tmp_df.to_numpy()]
     query = '''INSERT INTO  payout_summary (provider_key, bp_key, blocks_produced, payout_amount, 
-    blocks_won, burn_amount, payout_balance, burn_balance, epoch) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) 
+     payout_balance, burn_balance, epoch) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s) 
       ON CONFLICT (provider_key, bp_key, epoch) 
-      DO UPDATE SET payout_amount = payout_summary.payout_amount + EXCLUDED.payout_amount, 
+      DO UPDATE SET payout_amount = EXCLUDED.payout_amount , 
         blocks_produced=EXCLUDED.blocks_produced
       '''
+    #DO UPDATE SET payout_amount = payout_summary.payout_amount + EXCLUDED.payout_amount
     result = 0
     try:
         cursor = connection_payout.cursor()
@@ -220,20 +171,17 @@ def get_gcs_client():
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = BaseConfig.CREDENTIAL_PATH
     return storage.Client()
 
-def read_staking_json_list():
+def read_staking_json_list_fixed(staking_file_prefix):
     storage_client = get_gcs_client()
     bucket = storage_client.get_bucket(BaseConfig.GCS_BUCKET_NAME)
-    staking_file_prefix = "staking-"
-    blobs = storage_client.list_blobs(bucket, start_offset=staking_file_prefix)
-    # convert to string
+    blobs = storage_client.list_blobs(bucket, prefix=staking_file_prefix)
     file_dict_for_memory = dict()
     for blob in blobs:
         file_dict_for_memory[blob.name] = blob.updated
-    sorted_list = [k for k, v in sorted(file_dict_for_memory.items(), key=lambda p: p[1], reverse=False)]
-    recent_file = [list(i) for j, i in groupby(sorted_list, lambda a: a.split('-')[1])]
-    recent_file = [recent[-1] for recent in recent_file]
-    file_name_list_for_memory = [file for file in recent_file if str(file).endswith(".json")]
-    return file_name_list_for_memory
+    sorted_list = sorted(file_dict_for_memory.items(), key=lambda p: p[1], reverse=True)
+    most_recent_file = sorted_list[0][0]
+    return most_recent_file
+
 
 def read_staking_json_for_epoch(epoch_id):
     storage_client = get_gcs_client()
@@ -244,15 +192,17 @@ def read_staking_json_for_epoch(epoch_id):
     # convert to string
     ledger_name = ''
     modified_staking_df = pd.DataFrame()
-    file_to_read = read_staking_json_list()
+    file_to_read = read_staking_json_list_fixed(staking_file_prefix) 
     for blob in blobs:
+        logger.info(blob.name)
         if blob.name in file_to_read:
-            logger.info(blob.name)
+            #logger.info(blob.name)
             ledger_name = blob.name
             json_data_string = blob.download_as_string()
             json_data_dict = json.loads(json_data_string)
             modified_staking_df = json_normalize(json_data_dict)
     return modified_staking_df, ledger_name
+
 
 def read_foundation_accounts():
     foundation_account_df = pd.read_csv(BaseConfig.DELEGATION_ADDRESSS_CSV, header=None)
@@ -284,43 +234,46 @@ def read_wallet_mapping_spreadsheet(epoch_no):
     logger.info("connected to BP-Wallet-Mapping excel")
     return df
 
-def main(epoch):
-    emails_df = get_block_producer_mails() ## bp_key', 'email_id
-    wallet_mapping_df = read_wallet_mapping_spreadsheet(epoch)
-    insert_into_wallet_mapping(wallet_mapping_df)
-    df_mf_wallets = read_mf_delegating_wallets()
 
+def determine_slot_range_for_calculation(epoch_no):
+    # Since Epoch 0, after hardfork, started at 564480 Global Slot since Genesis,
+    # calculate slot for range normally and add 564480 to that.
+    
+    start_slot = ((epoch_no) * 7140) + 564480
+    end_slot = ((epoch_no+1) * 7140) + 564480 - 1
+    
+    return start_slot, end_slot
+
+def main(epoch):
+    start_slot, end_slot = determine_slot_range_for_calculation(epoch)
+    print('slot rangne: {}:{}'.format(start_slot, end_slot))
+    t = timer()
+    all_blocks_produced_df = get_all_blocks_produced_for_epoch(start_slot, end_slot)
+    print( timer() - t)
+    
+    
+    
     t = timer()
     staking_ledger_df, ledger_name = read_staking_json_for_epoch(epoch)
     staking_ledger_df["balance"] = pd.to_numeric(staking_ledger_df["balance"])
     print( timer() - t)
-
-    t = timer()
-    #insert_into_staking_ledger(staking_ledger_df, epoch)
-    print( timer() - t)
-
-    t = timer()
-    all_blocks_produced_df = get_all_blocks_produced_for_epoch(epoch)
-    print( timer() - t)
     
-    t = timer()
-    all_blocks_won_df = get_all_blocks_won_for_epoch(epoch)
-    print( timer() - t)
-
+    wallet_mapping_df = read_wallet_mapping_spreadsheet(epoch)
+    
+    df_mf_wallets = read_mf_delegating_wallets()
+    
     result = pd.DataFrame(columns=('delegating_wallet_name', 'delegating_wallet_key', 'return_wallet', 'bpdelegationpublickey', 
-             'bpemailaddress', 'blocks_produced', 'payout_amount',  'blocks_won','burn_reward')) # 'payout_balance',
-    
+             'bpemailaddress', 'blocks_produced', 'payout_amount')) 
 
     for index, row in df_mf_wallets.iterrows():
         total_stake_to_bp=0.0
         block_reward=0.0
-        burn_rewards=0.0
-        provider_won_block=0
+ 
         bp_produced=0
         provider_key = row['address']
         try:
             bp_key = staking_ledger_df.query('pk in @provider_key')['delegate'].values[0]
-            bp_email = emails_df.query('bp_key == @bp_key')['email_id'].values[0]
+            bp_email = wallet_mapping_df.query('bpdelegationpublickey == @bp_key')['bpemailaddress'].values[0]
             provider_delegation_amount = staking_ledger_df.query('pk in @provider_key')['balance'].values[0]
 
             delegation_df = staking_ledger_df.query('delegate == @bp_key')
@@ -328,20 +281,21 @@ def main(epoch):
             bp_produced = get_blocks_produced_by_bp(all_blocks_produced_df, bp_key)
             block_reward = calculate_supercharged_block_rewads(bp_produced, total_stake_to_bp, provider_delegation_amount)
             
-            ## Burn rewards
-            provider_won_block = get_blocks_won_by_provider(all_blocks_won_df, provider_key)
-            burn_rewards = provider_won_block*720
-            
-            result.loc[index] = [row['info'], provider_key, 'return_wallet', bp_key,
-                                bp_email, bp_produced, block_reward, provider_won_block, burn_rewards]
+            result.loc[index] = [row['info'], provider_key, 'B62qoUVTKseKucekfhegBxuaMkoJ37ThTE12gpGWjExV4UZvhqZD6w9', bp_key,
+                                bp_email, bp_produced, block_reward]
         except (Exception, psycopg2.DatabaseError) as error:
             logger.exception("error in calculation")
-            logger.info(provider_key, 'return_wallet', bp_key,
-                                bp_email, bp_produced, block_reward, provider_won_block, burn_rewards)
+            logger.info(provider_key, 'B62qoUVTKseKucekfhegBxuaMkoJ37ThTE12gpGWjExV4UZvhqZD6w9', bp_key,
+                                bp_email, bp_produced)
         
     result.to_csv('obligation_summary_%d.csv' %(epoch))
     save_payout_summary(result, epoch)
+    insert_into_wallet_mapping(wallet_mapping_df)
+
+    t = timer()
+    insert_into_staking_ledger(staking_ledger_df, epoch)
+    print( timer() - t)
     
 if __name__ == "__main__":
-    epoch_no = main(72)
+    epoch_no = main(0)
       
