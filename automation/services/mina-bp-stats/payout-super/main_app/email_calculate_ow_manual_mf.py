@@ -42,7 +42,8 @@ def send_mail(epoch_id, delegate_record_df, debug_mode=False):
     payouts_df = delegate_record_df
     total_minutes = (int(epoch_id+1) * 7140 * 3) + (BaseConfig.SLOT_WINDOW_VALUE * 3)
     deadline_date = BaseConfig.GENESIS_DATE + datetime.timedelta(minutes=total_minutes)
-    current_date = datetime.datetime.now()
+    current_date = datetime.datetime.now(datetime.timezone.utc)
+
     day_count = deadline_date - current_date
     day_count = day_count.days
     deadline_date = deadline_date.strftime("%d-%m-%Y %H:%M:%S")
@@ -55,8 +56,8 @@ def send_mail(epoch_id, delegate_record_df, debug_mode=False):
     count = 1
     for i in range(payouts_df.shape[0]):
         
-        # 0-delegating_wallet_name	1-delegating_wallet_key	2-return_wallet	3-bpdelegationpublickey	4-bpemailaddress	
-        # 5-blocks_produced	6-payout_amount	7-blocks_won	8-burn_reward
+        # 0-delegating_wallet_name  1-delegating_wallet_key 2-return_wallet 3-bpdelegationpublickey 4-bpemailaddress    
+        # 5-blocks_produced 6-payout_amount 7-blocks_won    8-burn_reward
         RETURN_WALLET_ADDRESS = payouts_df.iloc[i, 2] 
         wallet_name = payouts_df.iloc[i, 0]
         if 1==1: #if 'Treasury' in wallet_name: 
@@ -65,7 +66,6 @@ def send_mail(epoch_id, delegate_record_df, debug_mode=False):
             PAYOUT_AMOUNT = payouts_df.iloc[i, 6] 
             PAYOUT_RECEIVED = 0.0 # payouts_df.iloc[i, 4] 
             BP_EMAIL = payouts_df.iloc[i, 4] 
-            BURN_PAYOUT_AMOUNT = payouts_df.iloc[i, 8] 
             MD5_HASH = hashlib.md5(BLOCK_PRODUCER_ADDRESS.encode('utf-8')).hexdigest()
             html_content = html_text
           
@@ -78,15 +78,15 @@ def send_mail(epoch_id, delegate_record_df, debug_mode=False):
             html_content = html_content.replace("#DEADLINE_DATE", str(deadline_date))
             html_content = html_content.replace("#DAY_COUNT", str(day_count))
             html_content = html_content.replace("#RETURN_WALLET_ADDRESS", str(RETURN_WALLET_ADDRESS))
-            html_content = html_content.replace("#BURN_PAYOUT_AMOUNT", str(BURN_PAYOUT_AMOUNT))
             #html_content = html_content.replace("#BURN_PAYOUT_AMOUNT", str('0.00000'))
             html_content = html_content.replace("#BURN_WALLET_ADDRESS", 'B62qiburnzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzmp7r7UN6X')
             html_content = html_content.replace("#MD5_HASH", MD5_HASH)
             
 
             subject = f"""Delegation from {BaseConfig.ADDRESS_SUBJECT} Address {FOUNDATION_ADDRESS[:7]}...{FOUNDATION_ADDRESS[-4:]} Send Block Rewards in MINA for Epoch {epoch_id}"""
-            #
+            #block_producer_email = get_block_producer_mail(BLOCK_PRODUCER_ADDRESS)
             block_producer_email = BP_EMAIL
+            #block_producer_email = ['David.sedgwick@minaprotocol.com', 'umesh@ontab.com']
             if debug_mode:
                 block_producer_email = ['test@email.com']
         
@@ -112,8 +112,8 @@ def send_mail(epoch_id, delegate_record_df, debug_mode=False):
 
 if __name__ == "__main__":
     logger.info(" starting process")
-    epoch  = 72
+    epoch  = 0
     debug_mode = True
-    debug_mode = False
+    #debug_mode = False
     df = pd.read_csv('summary_files/obligation_summary_{0}.csv'.format(epoch), index_col=0)
     send_mail(epoch, df, debug_mode)
